@@ -1,0 +1,9 @@
+{
+    "type": "MOD",
+    "title": "CMO Camera Overhaul",
+    "dev_state": "WIP",
+    "tags": ["environment", "player_effects"],
+    "repo": "https://github.com/t-affeldt/combat_movement_overhaul/cmo_camera",
+    "issue_tracker": "https://github.com/t-affeldt/combat_movement_overhaul/issues",
+    "license": "LGPL-3.0-or-later"
+}
