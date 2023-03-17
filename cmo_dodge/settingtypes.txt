@@ -1,2 +1,0 @@
-# The amount of stamina consumed by a dodge action. zero = no costs, one = 100% of the stamina bar
-cmo_dodge.stamina_cost (Stamina Cost) float 0.25 0 1

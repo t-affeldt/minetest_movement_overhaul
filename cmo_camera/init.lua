@@ -1,4 +1,4 @@
-local minetest, vector = minetest, vector
+if not minetest.settings:get_bool("cmo_camera.enabled", true) then return end
 
 local max_eye_offset = vector.new({ x = 10, y = 5, z = 5 })
 local catchup_time = 1.2

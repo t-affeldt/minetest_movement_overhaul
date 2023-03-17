@@ -1,0 +1,13 @@
+cmo_camera.enabled (Enable enhanced 3rd person camera) bool true
+
+cmo_dodge.enabled (Enable dodge move) bool true
+
+# The amount of stamina consumed by a dodge action. zero = no costs, one = 100% of the stamina bar
+cmo_dodge.stamina_cost (Dodging stamina cost) float 0.25 0 1
+
+# The amount of force applied to the player upon performing a dodge.
+cmo_dodge.speed_boost (Dodging speed boost) float 15 0 100
+
+cmo_fixes.enabled (Enable movement fixes) bool true
+
+cmo_fx.enabled (Enable visual effects) bool true

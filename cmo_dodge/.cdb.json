@@ -1,9 +1,0 @@
-{
-    "type": "MOD",
-    "title": "CMO Dodge Ability",
-    "dev_state": "WIP",
-    "tags": ["player_effects", "pvp", "pve"],
-    "repo": "https://github.com/t-affeldt/combat_movement_overhaul/cmo_dodge",
-    "issue_tracker": "https://github.com/t-affeldt/combat_movement_overhaul/issues",
-    "license": "LGPL-3.0-or-later"
-}

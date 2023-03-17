@@ -1,9 +1,12 @@
+if not minetest.settings:get_bool("cmo_dodge.enabled", true) then return end
+
 local mod_hud_timers = minetest.get_modpath("hud_timers") ~= nil
 
 local MAX_KEY_TIME = 1
 local INVULNERABILTY_TIME = 1
 
 local STAMINA_COST = tonumber(minetest.settings:get("cmo_dodge.stamina_cost") or 0.25)
+local SPEED_BOOST = tonumber(minetest.settings:get("cmo_dodge.speed_boost") or 15)
 
 local directions = {
     left = vector.new({ x = -1, y = 0, z = 0 }),
@@ -37,11 +40,15 @@ local function perform_dodge(player, control_name)
     local stamina = unified_stamina.get(playername)
     minetest.log(dump2(stamina, "stamina"))
     -- cancel if insufficient stamina
-    if stamina < STAMINA_COST then return end
+    if stamina < STAMINA_COST then
+        players[playername] = nil
+        return
+    end
     local lookdir = player:get_look_horizontal()
     local direction = get_absolute_movement(directions[control_name], lookdir)
     -- add speed boost into chosen direction
-    local velocity = vector.multiply(direction, 15)
+    local movement_speed = math.min((player:get_physics_override()).speed or 1, 1)
+    local velocity = vector.multiply(direction, SPEED_BOOST * movement_speed)
     player:add_velocity(velocity)
     -- reduce stamina
     unified_stamina.add(playername, -STAMINA_COST)
