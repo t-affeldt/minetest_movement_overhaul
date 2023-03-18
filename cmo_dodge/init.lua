@@ -2,7 +2,7 @@ if not minetest.settings:get_bool("cmo_dodge.enabled", true) then return end
 
 local mod_hud_timers = minetest.get_modpath("hud_timers") ~= nil
 
-local MAX_KEY_TIME = 1
+local MAX_KEY_TIME = 0.8
 local INVULNERABILTY_TIME = 1
 
 local STAMINA_COST = tonumber(minetest.settings:get("cmo_dodge.stamina_cost") or 0.25)

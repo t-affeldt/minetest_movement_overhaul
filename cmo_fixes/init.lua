@@ -1,6 +1,14 @@
 if not minetest.settings:get_bool("cmo_fixes.enabled", true) then return end
 
+local CYCLE_LENGTH = 0.5
+
+local timer = 0
 minetest.register_globalstep(function(dtime)
+     -- skip if not enough time has passed
+     timer = timer + dtime
+     if timer < CYCLE_LENGTH then return end
+     timer = 0
+
     -- skip if no one is online
     local playerlist = minetest.get_connected_players()
     if #playerlist == 0 then return end

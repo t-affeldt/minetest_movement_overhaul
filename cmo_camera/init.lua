@@ -52,11 +52,13 @@ minetest.register_globalstep(function(dtime)
         -- normalize direction and then scale with maximum
         local scaled = vector.combine(vector.normalize(movement), max_eye_offset, scale)
         -- skip if negligible
-        local offset_1p, offset_3p = player:get_eye_offset()
-        local distance = vector.distance(offset_3p, scaled)
+        local offset_1p, _ = player:get_eye_offset()
+        local difference = scaled - player_data[name]
+        local distance = vector.length(difference)
         if distance > OFFSET_THRESHOLD then
             -- smooth out camera movement over time
-            local offset_new = player_data[name] + (scaled - player_data[name]) * math.min(timer / CATCHUP_TIME, 1)
+            local catchup = math.min(math.max(timer / CATCHUP_TIME, OFFSET_THRESHOLD / distance), 1)
+            local offset_new = player_data[name] + (difference) * catchup
             player_data[name] = offset_new
             -- set camera offset
             player:set_eye_offset(offset_1p, offset_new)

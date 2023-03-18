@@ -28,6 +28,7 @@ stds.minetest.read_globals = {
     "Settings",
     "unpack",
     "assert",
+    "Raycast",
     table = { fields = { "copy", "indexof" } },
     math = { fields = { "sign" } }
 }

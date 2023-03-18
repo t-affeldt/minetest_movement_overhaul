@@ -1,6 +1,6 @@
 local VARIANT_COUNT = 4
 local CHECK_DISTANCE = 3
-local NODE_CHANCE = 1
+local NODE_CHANCE = 8
 
 local node_box = {
 	type  = "fixed",
@@ -69,18 +69,16 @@ local function place_blood(pos)
     if minetest.find_node_near(pos, CHECK_DISTANCE, "ignore") then return end
     local below = minetest.registered_nodes[minetest.get_node(pos_below).name]
     if not below or not below.walkable or below.drawtype ~= "normal" or below.liquidtype ~= "none" then return end
-    --minetest.set_node(pos, get_random_blood())
     minetest.set_node(pos, get_random_blood())
 end
 
 minetest.register_on_player_hpchange(function(player, hp_change, reason)
     if not player or hp_change >= 0 then return end
     local damage = -hp_change / minetest.PLAYER_MAX_HP_DEFAULT
-    local should_place = math.random() >= damage * NODE_CHANCE
+    local should_place = damage ^ (1 / NODE_CHANCE) >= math.random()
     if should_place then
         local pos = player:get_pos()
-        local ground = vector.add(pos, vector.new({ x = 0, y = -0.25, z = 0 }))
-        place_blood(ground)
+        place_blood(pos)
     end
     --[[local r = math.random(1, 4)
     local x = 0.15 + math.random() * 0.70
