@@ -1,7 +1,10 @@
 if not minetest.settings:get_bool("cmo_camera.enabled", true) then return end
 
+local CYCLE_LENGTH = 0.1
+local CATCHUP_TIME = 1.5
+local OFFSET_THRESHOLD = 0.25
+
 local max_eye_offset = vector.new({ x = 10, y = 5, z = 5 })
-local catchup_time = 1.2
 
 local player_data = { }
 
@@ -30,9 +33,17 @@ minetest.register_on_leaveplayer(function(player, _)
 end)
 
 -- adjust camera offset
+local timer = 0
 minetest.register_globalstep(function(dtime)
-    if not dtime then return end
-    for _, player in pairs(minetest.get_connected_players()) do
+    -- skip if not enough time has passed
+    timer = timer + dtime
+    if timer < CYCLE_LENGTH then return end
+
+    -- skip if no one is online
+    local playerlist = minetest.get_connected_players()
+    if #playerlist == 0 then return end
+
+    for _, player in pairs(playerlist) do
         local name = player:get_player_name()
         local vel = player:get_velocity()
         local dir = player:get_look_horizontal()
@@ -40,13 +51,17 @@ minetest.register_globalstep(function(dtime)
         local movement = get_relative_movement(vel, dir)
         -- normalize direction and then scale with maximum
         local scaled = vector.combine(vector.normalize(movement), max_eye_offset, scale)
-        -- smooth out camera movement over time
-        local catchup = dtime / catchup_time
-        local current = (scaled * catchup) + (player_data[name] * (1 - catchup))
-        player_data[name] = current
-
-        -- set camera offset
-        local p1_offset, _ = player:get_eye_offset()
-        player:set_eye_offset(p1_offset, current)
+        -- skip if negligible
+        local offset_1p, offset_3p = player:get_eye_offset()
+        local distance = vector.distance(offset_3p, scaled)
+        if distance > OFFSET_THRESHOLD then
+            -- smooth out camera movement over time
+            local offset_new = player_data[name] + (scaled - player_data[name]) * math.min(timer / CATCHUP_TIME, 1)
+            player_data[name] = offset_new
+            -- set camera offset
+            player:set_eye_offset(offset_1p, offset_new)
+        end
     end
+
+    timer = 0
 end)

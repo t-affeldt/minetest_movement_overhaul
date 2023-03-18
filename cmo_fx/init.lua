@@ -63,6 +63,10 @@ local function apply_fx(player)
     apply_saturation(player)
 end
 
+minetest.register_on_leaveplayer(function(player)
+    local playername = player:get_player_name()
+    players[playername] = nil
+end)
 
 local timer = 0
 minetest.register_globalstep(function(dtime)
