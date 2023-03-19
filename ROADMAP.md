@@ -11,6 +11,7 @@
 - blood on HUD
 - blood on walls
 - blood on player model
+- particle effects
 
 ### CMO Camera
 - stability testing in multiplayer
@@ -20,22 +21,20 @@
 - invulnerability
 - sound / animation when attempting dodge with insufficient stamina
 - prevent dodging in the air
+- particle effects
 
 ### CMO Fixes
 - apply damage *after* hit animation
 
 ### CMO FX
-- refactor vignette effect to use hp_change event
 - hit sounds
 - heartbeat sound on low health
 - breathing sound (?) on low stamina
 - ringing sound on low mana
 
 ## To Do
-- backstab damage bonus
-- movement speed damage bonus
 - improved knockback calculation
 - blocking
 - power attacks
 - damage types (?)
-- stamina penalty for missed attacks
+- sprinting

@@ -1,4 +1,6 @@
-if not minetest.settings:get_bool("cmo_fx.enabled", true) then return end
+local ENABLE_VIGNETTE = minetest.settings:get_bool("cmo_fx.vignette", true)
+local ENABLE_DESATURATION = minetest.settings:get_bool("cmo_fx.desaturate", true)
+local ENABLE_HEARTBEAT = minetest.settings:get_bool("cmo_fx.heartbeat", true)
 
 local mod_mana = minetest.get_modpath("mana") ~= nil
 
@@ -8,21 +10,16 @@ local players = {}
 
 local VIGNETTE_OPACITY_MIN = 64
 local VIGNETTE_OPACITY_MAX = 255
-
-local function get_light(player)
-    local pos = vector.add(player:get_pos(), { x = 0, y = 1, z = 0 })
-    local node_light = minetest.env:get_node_light(pos)
-    if not node_light then node_light = 0 end
-    return node_light / 15
-end
+local HEARTBEAT_THRESHOLD = 0.3
 
 local function scale(min, max, val)
     return min + val * (max - min)
 end
 
-local function apply_vignette(player)
+local function apply_vignette(player, hp_offset)
+    if not ENABLE_VIGNETTE then return end
     local name = player:get_player_name()
-    local health = player:get_hp() / minetest.PLAYER_MAX_HP_DEFAULT
+    local health = (player:get_hp() + hp_offset) / minetest.PLAYER_MAX_HP_DEFAULT
     local opacity = scale(VIGNETTE_OPACITY_MIN, VIGNETTE_OPACITY_MAX, 1 - health)
     local image = "cmo_vignette.png^[opacity:" .. opacity
     if not players[name] then
@@ -44,9 +41,11 @@ local function apply_vignette(player)
         end
     end
 end
-local function apply_saturation(player)
+
+local function apply_saturation(player, hp_offset)
+    if not ENABLE_DESATURATION then return end
     local playername = player:get_player_name()
-    local health = scale(0.8, 1, player:get_hp() / minetest.PLAYER_MAX_HP_DEFAULT)
+    local health = scale(0.8, 1, (player:get_hp() + hp_offset) / minetest.PLAYER_MAX_HP_DEFAULT)
     local stamina = scale(0.9, 1, unified_stamina.get(playername))
     local mana_val = 1
     if mod_mana then
@@ -56,32 +55,62 @@ local function apply_saturation(player)
     lighting_monoids.saturation:add_change(player, saturation, "cmo_fx:stamina_drain")
 end
 
-local function apply_shake(player) end
-
-local function apply_fx(player)
-    apply_vignette(player)
-    apply_saturation(player)
+local function apply_heartbeat(player, hp_offset)
+    if not ENABLE_HEARTBEAT then return end
+    local playername = player:get_player_name()
+    local heartbeat = players[playername] and players[playername].heartbeat
+    local health = (player:get_hp() + hp_offset) / minetest.PLAYER_MAX_HP_DEFAULT
+    if health > HEARTBEAT_THRESHOLD and heartbeat ~= nil then
+        minetest.sound_fade(heartbeat, 0.2, 0)
+        players[playername].heartbeat = nil
+    elseif health <= HEARTBEAT_THRESHOLD and heartbeat == nil then
+        heartbeat = minetest.sound_play({ name = "cmo_fx_heartbeat" }, {
+            to_player = playername,
+            fade = 0.3,
+            loop = true
+        })
+        if players[playername] == nil then players[playername] = {} end
+        players[playername].heartbeat = heartbeat
+    end
 end
 
-minetest.register_on_leaveplayer(function(player)
-    local playername = player:get_player_name()
-    players[playername] = nil
-end)
+if ENABLE_VIGNETTE or ENABLE_HEARTBEAT then
+    minetest.register_on_player_hpchange(function(player, hp_change)
+        if hp_change == 0 then return end
+        apply_vignette(player, hp_change)
+        apply_heartbeat(player, hp_change)
+    end, false)
 
-local timer = 0
-minetest.register_globalstep(function(dtime)
-    -- skip if not enough time has passed
-    timer = timer + dtime
-    if timer < CYCLE_LENGTH then return end
+    minetest.register_on_leaveplayer(function(player)
+        local playername = player:get_player_name()
+        players[playername] = nil
+    end)
+end
 
-    -- skip if no one is online
-    local playerlist = minetest.get_connected_players()
-    if #playerlist == 0 then return end
+if ENABLE_DESATURATION then
+    local timer = 0
+    minetest.register_globalstep(function(dtime)
+        -- skip if not enough time has passed
+        timer = timer + dtime
+        if timer < CYCLE_LENGTH then return end
 
-    for _, player in ipairs(playerlist) do
-        apply_fx(player, timer)
-    end
+        -- skip if no one is online
+        local playerlist = minetest.get_connected_players()
+        if #playerlist == 0 then return end
 
-    -- reset timer
-    timer = 0
+        for _, player in ipairs(playerlist) do
+            apply_saturation(player, 0)
+        end
+
+        -- reset timer
+        timer = 0
+    end)
+end
+
+minetest.register_on_joinplayer(function(player)
+    minetest.after(0, function()
+        apply_vignette(player, 0)
+        apply_saturation(player, 0)
+        apply_heartbeat(player, 0)
+    end)
 end)

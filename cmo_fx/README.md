@@ -3,3 +3,4 @@ Immersively provides information on player attributes through contextual clues r
 
 ## License
 Code licensed under GNU LGPL v3. Textures licensed under CC BY-SA 4.0
+Heartbeat sound: CC0 from https://freesound.org/people/ShortRecord/sounds/551437/

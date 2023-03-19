@@ -1,3 +1,15 @@
+cmo_attacks.knockback_elevation (Bonus knockback from elevated positions) float 2 1 10
+
+cmo_attacks.backstabs (Damage bonus from backstabs) float 2 1 10
+
+cmo_attacks.movement_bonus (Damage bonus from movement speed) float 2 1 10
+
+cmo_attacks.stamina_drain (Stamina drain from missed swings) float 0.2 0 1
+
+cmo_blood.place_blood (Occasionally place blood when hit) bool true
+
+cmo_blood.fix_removed_blood (Hide unknown nodes after disabling blood placement) bool false
+
 cmo_camera.enabled (Enable enhanced 3rd person camera) bool true
 
 cmo_dodge.enabled (Enable dodge move) bool true
@@ -10,4 +22,8 @@ cmo_dodge.speed_boost (Dodging speed boost) float 15 0 100
 
 cmo_fixes.enabled (Enable movement fixes) bool true
 
-cmo_fx.enabled (Enable visual effects) bool true
+cmo_fx.vignette (Enable vignette on low health) bool true
+
+cmo_fx.desaturate (Desaturate screen on low attributes) bool true
+
+cmo_fx.heartbeat (Play heartbeat sound on low health) bool true

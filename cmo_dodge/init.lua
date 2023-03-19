@@ -17,13 +17,14 @@ local directions = {
 
 local players = {}
 
-local function get_absolute_movement(velocity, lookdir)
-    local axis = vector.new({ x = 0, y = 1, z = 0 })
-    local velocity_horizontal = vector.new({ x = velocity.x, y = 0, z = velocity.z })
-    local relative_horizontal = vector.rotate_around_axis(velocity_horizontal, axis, lookdir)
-    local relative = vector.new({ x = relative_horizontal.x, y = velocity.y, z = relative_horizontal.z })
-    return relative
-end
+minetest.register_on_player_hpchange(function(player, hp_change, reason)
+    if reason.type ~= "punch" then return hp_change end
+    local name = player:get_player_name()
+    if players[name] ~= nil and players[name].state == "active" then
+        return 0, true
+    end
+    return hp_change
+end, true)
 
 local function post_hook(player, properties_before)
     local playername = player:get_player_name()
@@ -38,14 +39,13 @@ end
 local function perform_dodge(player, control_name)
     local playername = player:get_player_name()
     local stamina = unified_stamina.get(playername)
-    minetest.log(dump2(stamina, "stamina"))
     -- cancel if insufficient stamina
     if stamina < STAMINA_COST then
         players[playername] = nil
         return
     end
     local lookdir = player:get_look_horizontal()
-    local direction = get_absolute_movement(directions[control_name], lookdir)
+    local direction = cmo.get_absolute_vector(directions[control_name], lookdir)
     -- add speed boost into chosen direction
     local movement_speed = math.min((player:get_physics_override()).speed or 1, 1)
     local velocity = vector.multiply(direction, SPEED_BOOST * movement_speed)
