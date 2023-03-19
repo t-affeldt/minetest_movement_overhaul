@@ -77,9 +77,9 @@ if MISS_PENALTY > 0 then
         local reduce_stamina = true
         -- ignore hits on minable nodes
         if pointed_thing and pointed_thing.type == "node" then
-            local groupcaps = (itemstack:get_tool_capabilities()).groupcaps
+            local groupcaps = (itemstack:get_tool_capabilities()).groupcaps or {}
             local node = minetest.get_node(pointed_thing.under)
-            local groups = minetest.registered_nodes[node.name].groups
+            local groups = minetest.registered_nodes[node.name].groups or {}
             for capability, _ in pairs(groupcaps) do
                 for group, _ in pairs(groups) do
                     if not reduce_stamina then break end
