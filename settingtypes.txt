@@ -1,21 +1,29 @@
-cmo_attacks.knockback_elevation (Bonus knockback from elevated positions) float 2 1 10
+cmo_attacks.knockback_air (Knockback multiplier when in air) float 1 1.5 10
 
-cmo_attacks.backstabs (Damage bonus from backstabs) float 2 1 10
+cmo_attacks.knockback_elevation (Knockback multiplier from elevated positions) float 1.5 1 10
 
-cmo_attacks.movement_bonus (Damage bonus from movement speed) float 2 1 10
+cmo_attacks.backstabs (Damage multiplier from backstabs) float 2 1 10
 
-cmo_attacks.stamina_drain (Stamina drain from missed swings) float 0.2 0 1
+cmo_attacks.movement_bonus (Damage multiplier from movement speed) float 2 1 10
+
+cmo_attacks.stamina_drain (Stamina drain from missed swings) float 0.15 0 1
 
 cmo_blood.place_blood (Occasionally place blood when hit) bool true
 
 cmo_blood.fix_removed_blood (Hide unknown nodes after disabling blood placement) bool false
+
+cmo_blood.hit_effects (Spawn particles upon taking damage) bool true
+
+cmo_blood.hit_particles (Maximum amount of particles to spawn upon taking damage) int 20 1 50
+
+cmo_blood.bleeding (Spawn particles when low on health) bool true
 
 cmo_camera.enabled (Enable enhanced 3rd person camera) bool true
 
 cmo_dodge.enabled (Enable dodge move) bool true
 
 # The amount of stamina consumed by a dodge action. zero = no costs, one = 100% of the stamina bar
-cmo_dodge.stamina_cost (Dodging stamina cost) float 0.25 0 1
+cmo_dodge.stamina_cost (Dodging stamina cost) float 0.2 0 1
 
 # The amount of force applied to the player upon performing a dodge.
 cmo_dodge.speed_boost (Dodging speed boost) float 15 0 100

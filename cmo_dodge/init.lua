@@ -5,7 +5,7 @@ local mod_hud_timers = minetest.get_modpath("hud_timers") ~= nil
 local MAX_KEY_TIME = 0.8
 local INVULNERABILTY_TIME = 1
 
-local STAMINA_COST = tonumber(minetest.settings:get("cmo_dodge.stamina_cost") or 0.25)
+local STAMINA_COST = tonumber(minetest.settings:get("cmo_dodge.stamina_cost") or 0.2)
 local SPEED_BOOST = tonumber(minetest.settings:get("cmo_dodge.speed_boost") or 15)
 
 local directions = {
@@ -34,6 +34,7 @@ local function post_hook(player, properties_before)
         properties[property] = value
     end
     player:set_properties(properties)
+    armor_monoid.monoid:del_change(player, "cmo_dodge:dodge")
 end
 
 local function perform_dodge(player, control_name)
@@ -41,9 +42,20 @@ local function perform_dodge(player, control_name)
     local stamina = unified_stamina.get(playername)
     -- cancel if insufficient stamina
     if stamina < STAMINA_COST then
+        minetest.sound_play({ name = "cmo_dodge_fail", gain = 2 }, { to_player = playername }, true)
         players[playername] = nil
         return
     end
+    -- cancel if in the air
+    local pos = player:get_pos()
+    local node = minetest.get_node_or_nil({ x = pos.x, y = pos.y - 1, z = pos.z })
+    local node_def = node and minetest.registered_nodes[node.name]
+    if node_def and not node_def.walkable then
+        minetest.sound_play({ name = "cmo_dodge_fail", gain = 2 }, { to_player = playername }, true)
+        players[playername] = nil
+        return
+    end
+    -- apply velocity bonus
     local lookdir = player:get_look_horizontal()
     local direction = cmo.get_absolute_vector(directions[control_name], lookdir)
     -- add speed boost into chosen direction
@@ -69,11 +81,14 @@ local function perform_dodge(player, control_name)
     properties.pointable = false
     properties.physical = false
     player:set_properties(properties)
+    armor_monoid.monoid:add_change(player, { immortal = 1 }, "cmo_dodge:dodge")
     -- reset player properties after some time
     minetest.after(INVULNERABILTY_TIME, function()
         if not player then return end
         post_hook(player, properties_before)
     end)
+    -- play sound
+    minetest.sound_play({ name = "cmo_dodge_perform" }, { to_player = playername }, true)
 end
 
 -- detect touble-tap of direction keys

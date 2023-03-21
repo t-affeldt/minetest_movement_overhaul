@@ -4,13 +4,17 @@ This is an overhaul for Minetest's movement system.
 ## Features
 
 ### CMO Attack Overhaul
-- elevated attacks do additional knockback
-- backstabs (punches within 90° angle opposed to look direction) do double damage
+- additional sound effects
+- elevated attacks do additional knockback (based on gravity)
+- increased knockback while in the air
+- backstabs against players do double damage
 - bonus damage based on relative movement speed
-- missed swings cost 20% stamina
+- missed swings cost 15% stamina
 - no damage dealt if out of stamina
 
 ### CMO Blood Effects
+- particle effects upon taking damage, based on type
+- particle effect when low on health
 - taking damage has a chance to place blood on the ground
 
 ### CMO Camera Overhaul
@@ -20,7 +24,7 @@ This is an overhaul for Minetest's movement system.
 - double-tap on any direction key initiates dodge
 - costs stamina and can only be performed if sufficient stamina is left
 - dodge moves player into specified direction quickly
-- short time of being unpointable
+- short time of being invulnerable and unpointable
 
 ### CMO Movement Fixes
 - greatly reduced movability while in the air

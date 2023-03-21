@@ -5,30 +5,29 @@
 ### Unified Stamina API
 - fix warnings about unused globals
 
+### Offhand
+- hold right-click to switch items
+
 ## Improvements
 
 ### CMO Blood
 - blood on HUD
 - blood on walls
 - blood on player model
-- particle effects
 
 ### CMO Camera
 - stability testing in multiplayer
 - add chat command to toggle camera mode
 
 ### CMO Dodge
-- invulnerability
-- sound / animation when attempting dodge with insufficient stamina
-- prevent dodging in the air
+- HUD animation when attempting dodge with insufficient stamina (?)
 - particle effects
 
 ### CMO Fixes
+- check for climbable nodes
 - apply damage *after* hit animation
 
 ### CMO FX
-- hit sounds
-- heartbeat sound on low health
 - breathing sound (?) on low stamina
 - ringing sound on low mana
 

@@ -60,7 +60,7 @@ local function apply_heartbeat(player, hp_offset)
     local playername = player:get_player_name()
     local heartbeat = players[playername] and players[playername].heartbeat
     local health = (player:get_hp() + hp_offset) / minetest.PLAYER_MAX_HP_DEFAULT
-    if health > HEARTBEAT_THRESHOLD and heartbeat ~= nil then
+    if (health == 0 or health > HEARTBEAT_THRESHOLD) and heartbeat ~= nil then
         minetest.sound_fade(heartbeat, 0.2, 0)
         players[playername].heartbeat = nil
     elseif health <= HEARTBEAT_THRESHOLD and heartbeat == nil then
