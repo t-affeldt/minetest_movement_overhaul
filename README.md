@@ -27,7 +27,8 @@ This is an overhaul for Minetest's movement system.
 - short time of being invulnerable and unpointable
 
 ### CMO Movement Fixes
-- greatly reduced movability while in the air
+- greatly reduced movability while in the air (unless allowed to fly)
+- muted footstep sounds while sneaking
 
 ### CMO Effects
 - vignette effect based on player health

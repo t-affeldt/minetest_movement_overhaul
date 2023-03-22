@@ -28,7 +28,9 @@ cmo_dodge.stamina_cost (Dodging stamina cost) float 0.2 0 1
 # The amount of force applied to the player upon performing a dodge.
 cmo_dodge.speed_boost (Dodging speed boost) float 15 0 100
 
-cmo_fixes.enabled (Enable movement fixes) bool true
+cmo_fixes.restrict_air (Restrict movability while in the air) bool true
+
+cmo_fixes.mute_sneak_footsteps (Silence footsteps while sneaking) bool true
 
 cmo_fx.vignette (Enable vignette on low health) bool true
 

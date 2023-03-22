@@ -24,7 +24,6 @@
 - particle effects
 
 ### CMO Fixes
-- check for climbable nodes
 - apply damage *after* hit animation
 
 ### CMO FX

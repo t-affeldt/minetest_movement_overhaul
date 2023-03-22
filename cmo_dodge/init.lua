@@ -77,9 +77,9 @@ local function perform_dodge(player, control_name)
     local properties = player:get_properties()
     local properties_before = {}
     properties_before.pointable = properties.pointable
-    properties_before.physical = properties.physical
+    properties_before.collide_with_objects = properties.collide_with_objects
     properties.pointable = false
-    properties.physical = false
+    properties.collide_with_objects = false
     player:set_properties(properties)
     armor_monoid.monoid:add_change(player, { immortal = 1 }, "cmo_dodge:dodge")
     -- reset player properties after some time
