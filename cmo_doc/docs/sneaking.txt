@@ -1,0 +1,2 @@
+# Sneak Improvements
+While sneaking, your footsteps will be muted to make you harder to hear.

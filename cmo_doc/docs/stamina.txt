@@ -1,0 +1,6 @@
+# Stamina
+Your stamina is now a vital resource for winning melee combat.
+Sprinting, dodging, blocking, and even punching will all require stamina and will consume some of it.
+
+Choose wisely which actions to perform. If you run out of stamina, you will be unable to flee quickly and unable to deal damage.
+Avoid spam-clicking and misdirected punches as those will drain your bar quickly.

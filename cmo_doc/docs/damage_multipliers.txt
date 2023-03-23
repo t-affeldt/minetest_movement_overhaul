@@ -1,0 +1,10 @@
+# Damage Multipliers
+Fast and precise strikes will be rewared with extra damage.
+
+If you manage to get behind your opponent and strike from there, you will deal twice as much damage.
+
+Sprinting or jumping can also help you. Relative mvement speeds are considered and will result in bonus damage if high enough.
+For example, landing a strike towards an unmoving opponent will deal double damage. Be careful though as your opponent will get the exact same bonus.
+What's relevant is not the absolute speed of your character but the relative speed compared to your opponent. If both of you are running in the same direction, you will not get a bonus.
+
+Watch your stamina bar! If you are below 15% then your attacks will not deal any damage

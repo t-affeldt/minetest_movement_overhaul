@@ -35,5 +35,8 @@ This is an overhaul for Minetest's movement system.
 - desaturation based on health, stamina, and mana
 - heartbeat sound on low health
 
+### CMO HUD Additions
+- new inidcator showing how much the weapon has charged up again since the last punch
+
 ## License
 Code licensed under GNU LGPL v3. Textures licensed under CC BY-SA 4.0

@@ -1,0 +1,6 @@
+# Jump / Fall Commitment
+When your character is more than one block above ground, your moveability will be severely reduced.
+You can still maneuver as usual on flat ground.
+However, jumping / falling off of cliffs or jumping while sprinting will cause this effect to trigger.
+
+You will now mostly keep whatever speed you had when you left the ground.

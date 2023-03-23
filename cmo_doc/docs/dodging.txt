@@ -1,0 +1,9 @@
+# Dodge Move
+Double-tap any direction key (WASD) to perform a dodge.
+When dodging, you will perform a fast step into the chosen direction.
+Alongside the movement, you will also gain invulnerability from punches for one second.
+
+Dodging costs stamina (by default 20%) and can only be performed while you still have enough points.
+You can only dodge while standing on the ground, not in the air or underwater.
+You also cannot dodge while the cooldown of a previous dodge move is still active. This is indicated by a timer in the bottom left.
+A subtle clicking sound will be played when your attempt failed.

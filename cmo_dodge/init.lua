@@ -34,7 +34,6 @@ local function post_hook(player, properties_before)
         properties[property] = value
     end
     player:set_properties(properties)
-    armor_monoid.monoid:del_change(player, "cmo_dodge:dodge")
 end
 
 local function perform_dodge(player, control_name)
@@ -81,7 +80,6 @@ local function perform_dodge(player, control_name)
     properties.pointable = false
     properties.collide_with_objects = false
     player:set_properties(properties)
-    armor_monoid.monoid:add_change(player, { immortal = 1 }, "cmo_dodge:dodge")
     -- reset player properties after some time
     minetest.after(INVULNERABILTY_TIME, function()
         if not player then return end

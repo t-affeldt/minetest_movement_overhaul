@@ -1,0 +1,13 @@
+# Visual & Sound Effects
+Loosing health will affect your vision. The less hitpoints you have left, the less you will be able to see.
+If your health gets very low, a heartbeat sound will be played to warn you.
+Additionally, consuming stamina or mana will desaturate the screen, giving you a clear indicator when your attributes are low.
+
+New sound effects have been added. You will now be able to clearly distinguish when you have:
+- succesfully hit something with a tool
+- succesfully punched something without a tool
+- missed your target
+- attempted an attack while out of stamina
+
+When striking another player, blood particles will be emitted. The amount of blood depends on the amount of damage dealt.
+There is also a chance for blood splashes to appear on the ground. They will disappear again after a few seconds.

@@ -1,6 +1,6 @@
 if not minetest.settings:get_bool("cmo_camera.enabled", true) then return end
 
-local CYCLE_LENGTH = 0.1
+local CYCLE_LENGTH = 0.05
 local CATCHUP_TIME = 1.5
 local OFFSET_THRESHOLD = 0.25
 
@@ -47,7 +47,7 @@ minetest.register_globalstep(function(dtime)
         local distance = vector.length(difference)
         if distance > OFFSET_THRESHOLD then
             -- smooth out camera movement over time
-            local catchup = math.min(math.max(timer / CATCHUP_TIME, OFFSET_THRESHOLD / distance), 1)
+            local catchup = math.min(timer / CATCHUP_TIME, 1)
             local offset_new = player_data[name] + (difference) * catchup
             player_data[name] = offset_new
             -- set camera offset
