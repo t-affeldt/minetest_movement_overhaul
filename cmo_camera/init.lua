@@ -1,8 +1,12 @@
+local multiplayer = not minetest.is_singleplayer()
 if not minetest.settings:get_bool("cmo_camera.enabled", true) then return end
+if multiplayer and not minetest.settings:get_bool("cmo_camera.multiplayer", false) then return end
 
 local CYCLE_LENGTH = 0.05
 local CATCHUP_TIME = 1.5
 local OFFSET_THRESHOLD = 0.25
+-- no cost of transmitting small changes on singleplayer
+if not multiplayer then OFFSET_THRESHOLD = 0 end
 
 local max_eye_offset = vector.new({ x = 10, y = 5, z = 5 })
 
@@ -45,13 +49,17 @@ minetest.register_globalstep(function(dtime)
         local offset_1p, _ = player:get_eye_offset()
         local difference = scaled - player_data[name]
         local distance = vector.length(difference)
-        if distance > OFFSET_THRESHOLD then
+        local catchup = math.min(timer / CATCHUP_TIME, 1)
+        if distance * catchup > OFFSET_THRESHOLD then
             -- smooth out camera movement over time
-            local catchup = math.min(timer / CATCHUP_TIME, 1)
             local offset_new = player_data[name] + (difference) * catchup
             player_data[name] = offset_new
             -- set camera offset
             player:set_eye_offset(offset_1p, offset_new)
+        else
+            -- don't send very small changes
+            -- don't update timer to allow changes to build up
+            return
         end
     end
 

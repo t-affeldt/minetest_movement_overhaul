@@ -1,3 +1,5 @@
+[Combat]
+
 cmo_attacks.knockback_air (Knockback multiplier when in air) float 1 1.5 10
 
 cmo_attacks.knockback_elevation (Knockback multiplier from elevated positions) float 1.5 1 10
@@ -7,6 +9,24 @@ cmo_attacks.backstabs (Damage multiplier from backstabs) float 2 1 10
 cmo_attacks.movement_bonus (Damage multiplier from movement speed) float 2 1 10
 
 cmo_attacks.stamina_drain (Stamina drain from missed swings) float 0.15 0 1
+
+[Movement]
+
+cmo_dodge.enabled (Enable dodge move) bool true
+
+# The amount of stamina consumed by a dodge action. zero = no costs, one = 100% of the stamina bar
+cmo_dodge.stamina_cost (Dodging stamina cost) float 0.2 0 1
+
+# The amount of force applied to the player upon performing a dodge.
+cmo_dodge.speed_boost (Dodging speed boost) float 15 0 100
+
+cmo_fixes.restrict_air (Restrict maneuverability while in the air) bool true
+
+[Visual Effects]
+
+cmo_fx.vignette (Enable vignette on low health) bool true
+
+cmo_fx.desaturate (Desaturate screen on low attributes) bool true
 
 cmo_blood.place_blood (Occasionally place blood when hit) bool true
 
@@ -20,20 +40,10 @@ cmo_blood.bleeding (Spawn particles when low on health) bool true
 
 cmo_camera.enabled (Enable enhanced 3rd person camera) bool true
 
-cmo_dodge.enabled (Enable dodge move) bool true
+cmo_camera.multiplayer (Enhanced camera in multiplayer. Can cause lag.) bool false
 
-# The amount of stamina consumed by a dodge action. zero = no costs, one = 100% of the stamina bar
-cmo_dodge.stamina_cost (Dodging stamina cost) float 0.2 0 1
-
-# The amount of force applied to the player upon performing a dodge.
-cmo_dodge.speed_boost (Dodging speed boost) float 15 0 100
-
-cmo_fixes.restrict_air (Restrict movability while in the air) bool true
+[Audio Effects]
 
 cmo_fixes.mute_sneak_footsteps (Silence footsteps while sneaking) bool true
-
-cmo_fx.vignette (Enable vignette on low health) bool true
-
-cmo_fx.desaturate (Desaturate screen on low attributes) bool true
 
 cmo_fx.heartbeat (Play heartbeat sound on low health) bool true
