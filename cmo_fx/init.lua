@@ -51,8 +51,8 @@ local function apply_saturation(player, hp_offset)
     if mod_mana then
         mana_val = scale(0.2, 1, mana.get(playername) / mana.getmax(playername))
     end
-    local saturation = health * stamina * mana_val
-    lighting_monoids.saturation:add_change(player, saturation, "cmo_fx:stamina_drain")
+    local lighting = { saturation = health * stamina * mana_val }
+    lighting_monoid:add_change(player, lighting, "cmo_fx:stamina_drain")
 end
 
 local function apply_heartbeat(player, hp_offset)
