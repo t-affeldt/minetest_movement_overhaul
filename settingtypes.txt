@@ -44,6 +44,8 @@ cmo_camera.multiplayer (Enhanced camera in multiplayer. Can cause lag.) bool fal
 
 [Audio Effects]
 
+cmo_attacks.play_attack_sounds (Play attack sounds) bool true
+
 cmo_fixes.mute_sneak_footsteps (Silence footsteps while sneaking) bool true
 
 cmo_fx.heartbeat (Play heartbeat sound on low health) bool true

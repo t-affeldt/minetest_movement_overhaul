@@ -46,10 +46,7 @@ local function perform_dodge(player, control_name)
         return
     end
     -- cancel if in the air
-    local pos = player:get_pos()
-    local node = minetest.get_node_or_nil({ x = pos.x, y = pos.y - 1, z = pos.z })
-    local node_def = node and minetest.registered_nodes[node.name]
-    if node_def and not node_def.walkable then
+    if not cmo._is_grounded(player) then
         minetest.sound_play({ name = "cmo_dodge_fail", gain = 2 }, { to_player = playername }, true)
         players[playername] = nil
         return

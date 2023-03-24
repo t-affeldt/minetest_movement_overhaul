@@ -11,6 +11,13 @@ local BACKSTAB_MAX_ANGLE = 90
 local BACKSTAB_DAMAGE_MULTIPLIER = tonumber(minetest.settings:get("cmo_attacks.backstabs") or 2)
 local MISS_PENALTY = tonumber(minetest.settings:get("cmo_attacks.stamina_drain") or 0.15)
 local MELEE_DISTANCE = 8
+local PLAY_ATTACK_SOUNDS = minetest.settings:get_bool("cmo_attacks.play_attack_sounds", true)
+
+local function sound_play(...)
+    if PLAY_ATTACK_SOUNDS then
+        return minetest.sound_play(...)
+    end
+end
 
 local knockback_calc = minetest.calculate_knockback
 if KNOCKBACK_HEIGHT_ADVANTAGE > 1 or KNOCKBACK_AIR_BONUS > 1 then
@@ -85,7 +92,7 @@ minetest.register_on_player_hpchange(function(player, hp_change, reason)
     local itemstack = reason.object:get_wielded_item()
     local itemname = (itemstack and itemstack:get_name()) or ""
     if minetest.registered_tools[itemname] ~= nil then sound = "cmo_hit_tool" end
-    minetest.sound_play({ name = sound }, { to_player = reason.object:get_player_name() }, true)
+    sound_play({ name = sound }, { to_player = reason.object:get_player_name() }, true)
 end, false)
 
 if MISS_PENALTY > 0 then
@@ -99,7 +106,7 @@ if MISS_PENALTY > 0 then
         local attacker_name = reason.object:get_player_name()
         local stamina = unified_stamina.get(attacker_name)
         if stamina >= MISS_PENALTY then return hp_change end
-        minetest.sound_play({ name = "cmo_hit_fail" }, { to_player = attacker_name }, true)
+        sound_play({ name = "cmo_hit_fail" }, { to_player = attacker_name }, true)
         return 0, true
     end, true)
 
@@ -108,7 +115,7 @@ if MISS_PENALTY > 0 then
         if control_name ~= "dig" then return end
         local playername = player:get_player_name()
         if unified_stamina.get(playername) < MISS_PENALTY then
-            minetest.sound_play({ name = "cmo_hit_fail" }, { to_player = playername }, true)
+            sound_play({ name = "cmo_hit_fail" }, { to_player = playername }, true)
             return
         end
         local itemstack = player:get_wielded_item()
@@ -116,18 +123,12 @@ if MISS_PENALTY > 0 then
         -- ignore using edible items
         if itemdef.on_use == minetest.item_eat then return end
         -- get object / node / nothing that player looks at
-        local range = itemdef.range or 4
-        local eye_height = (player:get_properties()).eye_height
-        local pos1 = vector.add(player:get_pos(), vector.new({ x = 0, y = eye_height, z = 0 }))
-        local pos2 = vector.add(pos1, vector.multiply(player:get_look_dir(), range))
-        local ray = Raycast(pos1, pos2, true, true)
-        local _ = ray() -- first object is player themselves
-        local pointed_thing = ray()
+        local pointed_thing = cmo._get_pointed_thing(player)
         local reduce_stamina = true
         -- ignore successful hits
         if pointed_thing and pointed_thing.type == "object" then
             reduce_stamina = false
-        -- ignore hits on minable nodes
+        -- ignore hits on mineable nodes
         elseif pointed_thing and pointed_thing.type == "node" then
             local groupcaps = (itemstack:get_tool_capabilities()).groupcaps or {}
             local node = minetest.get_node(pointed_thing.under)
@@ -144,7 +145,7 @@ if MISS_PENALTY > 0 then
         end
         -- apply stamina penalty
         if reduce_stamina then
-            minetest.sound_play({ name = "cmo_hit_miss" }, { to_player = playername }, true)
+            sound_play({ name = "cmo_hit_miss" }, { to_player = playername }, true)
             unified_stamina.add(playername, -MISS_PENALTY)
         end
     end)
