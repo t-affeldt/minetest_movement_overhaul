@@ -69,7 +69,7 @@ function cmo._get_pointed_thing(player)
                 result = pointed_thing
                 break
             end
-        else
+        elseif pointed_thing.type == "nothing" then
             result = pointed_thing
             break
         end

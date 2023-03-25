@@ -38,15 +38,20 @@ function cmo.clean_itemstack(itemstack)
     -- skip if not a tool and thus wasn't modified
     if not itemdef then return itemstack end
     local meta = itemstack:get_meta()
-    local last_modifier = tonumber(meta:get_string("cmo_attacks:modifier")) or 1
-    if last_modifier == 1 then return itemstack end
+    local real_caps = meta:get_string("cmo_attacks:real_capabilities")
+    if real_caps == "" then
+        return itemstack
+    else
+        real_caps = minetest.deserialize(real_caps, true)
+    end
     local tool_caps = itemstack:get_tool_capabilities()
-    for group, val in pairs(tool_caps.damage_groups) do
-        if not table.contains(cmo.skip_damage_groups, group) then
-            tool_caps.damage_groups[group] = val / last_modifier
+    for group, _ in pairs(tool_caps.damage_groups) do
+        if table.indexof(cmo.skip_damage_groups, group) == -1 then
+            tool_caps.damage_groups[group] = real_caps[group]
         end
     end
     meta:set_tool_capabilities(tool_caps)
+    meta:set_string("cmo_attacks:real_capabilities", "")
     meta:set_string("cmo_attacks:modifier", "")
     return itemstack
 end
@@ -154,9 +159,6 @@ if MISS_PENALTY > 0 then
             return
         end
         local itemstack = player:get_wielded_item()
-        local itemdef = itemstack:get_definition()
-        -- ignore using edible items
-        if itemdef.on_use == minetest.item_eat then return end
         -- get object / node / nothing that player looks at
         local pointed_thing = cmo._get_pointed_thing(player)
         local reduce_stamina = true
@@ -193,6 +195,7 @@ minetest.register_globalstep(function(dtime)
     if timer < CYCLE_LENGTH then return end
     local players = minetest.get_connected_players()
     for _, player in ipairs(players) do
+
         local itemstack = player:get_wielded_item()
         local itemdef = minetest.registered_tools[itemstack:get_name()]
         -- skip if not a tool and thus shouldn't be modified
@@ -205,6 +208,14 @@ minetest.register_globalstep(function(dtime)
         local meta = itemstack:get_meta()
         -- NOTE: use string instead of int to set default to 1 instead of 0
         local last_modifier = tonumber(meta:get_string("cmo_attacks:modifier")) or 1
+        local real_caps = meta:get_string("cmo_attacks:real_capabilities")
+        local store_caps = false
+        if real_caps == "" then
+            store_caps = true
+            real_caps = tool_caps.damage_groups
+        else
+            real_caps = minetest.deserialize(real_caps, true)
+        end
 
         local modifier = 1
         for _, method in pairs(cmo.damage_modifiers) do
@@ -216,15 +227,20 @@ minetest.register_globalstep(function(dtime)
         if modifier == last_modifier then return end
 
         modifier = chance_round(modifier)
-        for group, val in pairs(tool_caps.damage_groups) do
-            if not table.contains(cmo.skip_damage_groups, group) then
-                tool_caps.damage_groups[group] = val * modifier / last_modifier
+        for group, _ in pairs(tool_caps.damage_groups) do
+            if table.indexof(cmo.skip_damage_groups, group) == -1 then
+                tool_caps.damage_groups[group] = real_caps[group] * modifier
             end
         end
         meta:set_tool_capabilities(tool_caps)
         if modifier == 1 then
             meta:set_string("cmo_attacks:modifier", "")
+            meta:set_string("cmo_attacks:real_capabilities", "")
         else
+            if store_caps then
+                local serialized = minetest.serialize(real_caps)
+                meta:set_string("cmo_attacks:real_capabilities", serialized)
+            end
             meta:set_string("cmo_attacks:modifier", "" .. modifier)
         end
         player:set_wielded_item(itemstack)

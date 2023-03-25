@@ -1,5 +1,5 @@
 
-std = "luajit+minetest"
+std = "luajit+minetest+modpack"
 ignore = { "212" }
 
 files[".luacheckrc"].std = "min+luacheck"
@@ -32,6 +32,11 @@ stds.minetest.read_globals = {
     "Raycast",
     table = { fields = { "copy", "indexof" } },
     math = { fields = { "sign" } }
+}
+
+stds.modpack = {}
+stds.modpack.globals = {
+    "cmo"
 }
 
 stds.attacks_deps = {}
