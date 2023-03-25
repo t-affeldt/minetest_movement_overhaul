@@ -6,9 +6,12 @@
 - fix warnings about unused globals
 
 ### Offhand
-- hold right-click to switch items
+- hold right-click to switch items (?)
 
 ## Improvements
+
+### CMO Attacks
+- apply damage *after* hit animation
 
 ### CMO Blood
 - blood on HUD
@@ -23,12 +26,9 @@
 - HUD animation when attempting dodge with insufficient stamina (?)
 - particle effects
 
-### CMO Fixes
-- apply damage *after* hit animation
-
 ### CMO FX
+- redesign vignette
 - breathing sound (?) on low stamina
-- ringing sound on low mana
 
 ## To Do
 - improved knockback calculation

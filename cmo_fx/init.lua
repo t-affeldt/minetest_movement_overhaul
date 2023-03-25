@@ -1,8 +1,11 @@
 local ENABLE_VIGNETTE = minetest.settings:get_bool("cmo_fx.vignette", true)
 local ENABLE_DESATURATION = minetest.settings:get_bool("cmo_fx.desaturate", true)
 local ENABLE_HEARTBEAT = minetest.settings:get_bool("cmo_fx.heartbeat", true)
+local ENABLE_MANA_PARTICLES = true
+local ENABLE_MANA_SOUND = true
 
 local mod_mana = minetest.get_modpath("mana") ~= nil
+if not mod_mana then ENABLE_MANA_PARTICLES = false end
 
 local CYCLE_LENGTH = 0.1
 
@@ -22,8 +25,7 @@ local function apply_vignette(player, hp_offset)
     local health = (player:get_hp() + hp_offset) / minetest.PLAYER_MAX_HP_DEFAULT
     local opacity = scale(VIGNETTE_OPACITY_MIN, VIGNETTE_OPACITY_MAX, 1 - health)
     local image = "cmo_vignette.png^[opacity:" .. opacity
-    if not players[name] then
-        players[name] = {}
+    if not players[name].vignette then
         players[name].vignette = player:hud_add({
             name = "cmo_vignette",
             hud_elem_type = "image",
@@ -58,7 +60,7 @@ end
 local function apply_heartbeat(player, hp_offset)
     if not ENABLE_HEARTBEAT then return end
     local playername = player:get_player_name()
-    local heartbeat = players[playername] and players[playername].heartbeat
+    local heartbeat = players[playername].heartbeat
     local health = (player:get_hp() + hp_offset) / minetest.PLAYER_MAX_HP_DEFAULT
     if (health == 0 or health > HEARTBEAT_THRESHOLD) and heartbeat ~= nil then
         minetest.sound_fade(heartbeat, 0.2, 0)
@@ -69,8 +71,54 @@ local function apply_heartbeat(player, hp_offset)
             fade = 0.3,
             loop = true
         })
-        if players[playername] == nil then players[playername] = {} end
         players[playername].heartbeat = heartbeat
+    end
+end
+
+local function apply_mana_recharge(player)
+    if not ENABLE_MANA_PARTICLES and not ENABLE_MANA_SOUND then return end
+    local name = player:get_player_name()
+    local mana_val = mana.get(name) / mana.getmax(name)
+    if mana_val <= 0.5 then
+        if ENABLE_MANA_PARTICLES and not players[name].mana_particles then
+            local eye_height = (player:get_properties()).eye_height
+            players[name].mana_particles = minetest.add_particlespawner({
+                amount = 30,
+                time = 0,
+                attached = player,
+                collisiondetection = false,
+                texture = {
+                    name = "cmo_mana_particle.png^[invert:rgb",
+                    blend = "sub"
+                },
+                size = 0.2,
+                pos = vector.new({x = 0, y = eye_height / 2, z = 0 }),
+                radius = 1.5,
+                exptime = 2,
+                attract = {
+                    kind = "point",
+                    strength = 0.5,
+                    origin = vector.new({ x = 0, y = eye_height, z = 0 }),
+                    origin_attached = player
+                }
+            })
+        end
+        if ENABLE_MANA_SOUND and not players[name].mana_sound then
+            players[name].mana_sound = minetest.sound_play({ name = "cmo_fx_mana_depletion", gain = 0.2 }, {
+                to_player = name,
+                fade = 0.3,
+                loop = true
+            })
+        end
+    else
+        if players[name].mana_particles then
+            minetest.delete_particlespawner(players[name].mana_particles)
+            players[name].mana_particles = nil
+        end
+        if players[name].mana_sound then
+            minetest.sound_fade(players[name].mana_sound, 0.2, 0)
+            players[name].mana_sound = nil
+        end
     end
 end
 
@@ -80,14 +128,9 @@ if ENABLE_VIGNETTE or ENABLE_HEARTBEAT then
         apply_vignette(player, hp_change)
         apply_heartbeat(player, hp_change)
     end, false)
-
-    minetest.register_on_leaveplayer(function(player)
-        local playername = player:get_player_name()
-        players[playername] = nil
-    end)
 end
 
-if ENABLE_DESATURATION then
+if ENABLE_DESATURATION or ENABLE_MANA_PARTICLES or ENABLE_MANA_SOUND then
     local timer = 0
     minetest.register_globalstep(function(dtime)
         -- skip if not enough time has passed
@@ -100,6 +143,7 @@ if ENABLE_DESATURATION then
 
         for _, player in ipairs(playerlist) do
             apply_saturation(player, 0)
+            apply_mana_recharge(player)
         end
 
         -- reset timer
@@ -108,9 +152,16 @@ if ENABLE_DESATURATION then
 end
 
 minetest.register_on_joinplayer(function(player)
+    local playername = player:get_player_name()
+    players[playername] = {}
     minetest.after(0, function()
         apply_vignette(player, 0)
         apply_saturation(player, 0)
         apply_heartbeat(player, 0)
     end)
+end)
+
+minetest.register_on_leaveplayer(function(player)
+    local playername = player:get_player_name()
+    players[playername] = nil
 end)

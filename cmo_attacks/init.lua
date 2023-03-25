@@ -71,7 +71,10 @@ if KNOCKBACK_HEIGHT_ADVANTAGE > 1 or KNOCKBACK_AIR_BONUS > 1 then
         -- do bonus knockback when positioned higher
         if KNOCKBACK_HEIGHT_ADVANTAGE > 1 then
             local height_diff = pos2.y - pos1.y
-            local gravity = (player:get_physics_override()).gravity or 1
+            local gravity = 1
+            if player:is_player() then
+                gravity = (player:get_physics_override()).gravity or 1
+            end
             if height_diff > 0 and gravity > 0 then
                 local advantage = KNOCKBACK_HEIGHT_ADVANTAGE ^ gravity
                 knockback = knockback * (advantage ^ math.min(height_diff / KNOCKBACK_HEIGHT_SCALE, 1))
@@ -79,7 +82,7 @@ if KNOCKBACK_HEIGHT_ADVANTAGE > 1 or KNOCKBACK_AIR_BONUS > 1 then
         end
         -- do bonus knockback when target is in the air
         if KNOCKBACK_AIR_BONUS > 1 then
-            local node = minetest.get_node_or_nil({ x = pos1.x, y = pos1.y - 1, z = pos1.z })
+            local node = minetest.get_node({ x = pos1.x, y = pos1.y - 1, z = pos1.z })
             local node_def = node and minetest.registered_nodes[node.name]
             if node_def and not node_def.walkable then
                 knockback = knockback * KNOCKBACK_AIR_BONUS

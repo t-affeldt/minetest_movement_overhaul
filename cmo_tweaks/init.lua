@@ -1,5 +1,8 @@
-local RESTRICT_AIR_MOVEMENT = minetest.settings:get_bool("cmo_fixes.restrict_air", true)
-local MUTE_SNEAK_FOOTSTEPS = minetest.settings:get_bool("cmo_fixes.mute_sneak_footsteps", true)
+local mod_name_monoid = minetest.get_modpath("name_monoid") ~= nil
+
+local RESTRICT_AIR_MOVEMENT = minetest.settings:get_bool("cmo_tweaks.restrict_air", true)
+local MUTE_SNEAK_FOOTSTEPS = minetest.settings:get_bool("cmo_tweaks.mute_sneak_footsteps", true)
+local HIDE_NAMETAG = minetest.settings:get_bool("cmo_tweaks.hide_nametag", true)
 
 local CYCLE_LENGTH = 0.2
 
@@ -32,19 +35,42 @@ if RESTRICT_AIR_MOVEMENT then
             local pos = player:get_pos()
             local may_fly = player:get_attach() ~= nil or minetest.check_player_privs(player, "fly")
             if not may_fly and not is_grounded(pos) and not is_climbable(pos) then speed = 0.25 end
-            player_monoids.speed:add_change(player, speed, "cmo_fixes:ground_lock")
+            player_monoids.speed:add_change(player, speed, "cmo_tweaks:jump_commitment")
         end
     end)
 end
 
-if MUTE_SNEAK_FOOTSTEPS then
+if MUTE_SNEAK_FOOTSTEPS or HIDE_NAMETAG then
     controls.register_on_press(function(player, control_name)
         if control_name ~= "sneak" then return end
-        player:set_properties({ makes_footstep_sound = false })
+        if MUTE_SNEAK_FOOTSTEPS then
+            player:set_properties({ makes_footstep_sound = false })
+        end
+        if HIDE_NAMETAG then
+            if mod_name_monoid then
+                local nametag = { color = { r = 0, g = 0, b = 0, a = 0 } }
+                name_monoid.monoid:add_change(player, nametag, "cmo_tweaks:hide_nametag")
+            else
+                local nametag = player:get_nametag_attributes()
+                nametag.color.a = 0
+                player:set_nametag_attributes(nametag)
+            end
+        end
     end)
 
     controls.register_on_release(function(player, control_name)
         if control_name ~= "sneak" then return end
-        player:set_properties({ makes_footstep_sound = true })
+        if MUTE_SNEAK_FOOTSTEPS then
+            player:set_properties({ makes_footstep_sound = true })
+        end
+        if HIDE_NAMETAG then
+            if mod_name_monoid then
+                name_monoid.monoid:del_change(player, "cmo_tweaks:hide_nametag")
+            else
+                local nametag = player:get_nametag_attributes()
+                nametag.color.a = 255
+                player:set_nametag_attributes(nametag)
+            end
+        end
     end)
 end

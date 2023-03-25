@@ -58,7 +58,12 @@ minetest.register_globalstep(function(dtime)
             player:set_eye_offset(offset_1p, offset_new)
         else
             -- don't send very small changes
-            -- don't update timer to allow changes to build up
+            -- allow timer to build up if destination hasn't been reached yet
+            if distance > OFFSET_THRESHOLD or timer then
+                timer = 0
+            elseif timer > CATCHUP_TIME then
+                timer = CATCHUP_TIME
+            end
             return
         end
     end
