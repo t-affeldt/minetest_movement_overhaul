@@ -1,4 +1,4 @@
-if not XEnchanting then return end
+if XEnchanting == nil then return end
 
 local set_enchanted_tool = XEnchanting.set_enchanted_tool
 XEnchanting.set_enchanted_tool = function(self, pos, itemstack, ...)

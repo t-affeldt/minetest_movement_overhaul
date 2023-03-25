@@ -6,10 +6,10 @@ local mod_x_enchanting = minetest.get_modpath("x_enchanting") ~= nil
 local KNOCKBACK_HEIGHT_ADVANTAGE = tonumber(minetest.settings:get("cmo_attacks.knockback_elevation") or 1.5)
 local KNOCKBACK_HEIGHT_SCALE = 4
 local KNOCKBACK_AIR_BONUS = tonumber(minetest.settings:get("cmo_attacks.knockback_air") or 1.5)
-local MOVEMENT_DAMAGE_MULTIPLIER = tonumber(minetest.settings:get("cmo_attacks.movement_bonus") or 2)
+local MOVEMENT_DAMAGE_MULTIPLIER = tonumber(minetest.settings:get("cmo_attacks.movement_bonus") or 1.5)
 local MOVEMENT_DAMAGE_SCALE = 8
 local BACKSTAB_MAX_ANGLE = 90
-local BACKSTAB_DAMAGE_MULTIPLIER = tonumber(minetest.settings:get("cmo_attacks.backstabs") or 2)
+local BACKSTAB_DAMAGE_MULTIPLIER = tonumber(minetest.settings:get("cmo_attacks.backstabs") or 1.5)
 local MISS_PENALTY = tonumber(minetest.settings:get("cmo_attacks.stamina_drain") or 0.15)
 local PLAY_ATTACK_SOUNDS = minetest.settings:get_bool("cmo_attacks.play_attack_sounds", true)
 
@@ -97,6 +97,7 @@ if MOVEMENT_DAMAGE_MULTIPLIER > 1 then
         local speed2 = pointed_thing.ref:get_velocity()
         local diff = vector.length(vector.subtract(speed1, speed2))
         local damage = MOVEMENT_DAMAGE_MULTIPLIER ^ math.min(diff / MOVEMENT_DAMAGE_SCALE, 1)
+        damage = math.round(damage * 4) / 4
         return damage
     end)
 end
@@ -110,14 +111,15 @@ if BACKSTAB_DAMAGE_MULTIPLIER > 1 then
             lookdir = pointed_thing.ref:get_look_dir()
         elseif pointed_thing.ref.get_rotation then
             lookdir = pointed_thing.ref:get_rotation()
-        else return 1
+        else
+            return 1
         end
         -- vector from defender to attacker
         local attacker_dir = vector.subtract(player:get_pos(), pointed_thing.ref:get_pos())
-        local angle = vector.angle(lookdir, attacker_dir)
+        local angle = vector.angle(lookdir, attacker_dir) / (2 * math.pi) * 360
         -- check if within critical angle
-        local max_angle = BACKSTAB_MAX_ANGLE * math.pi / 180
-        if 180 - (max_angle / 2) <= angle and angle <= 180 + (max_angle / 2) then
+        local max_angle = BACKSTAB_MAX_ANGLE
+        if 180 - (max_angle / 2) <= angle then
             return BACKSTAB_DAMAGE_MULTIPLIER
         end
         return 1
@@ -218,18 +220,19 @@ minetest.register_globalstep(function(dtime)
         end
 
         local modifier = 1
-        for _, method in pairs(cmo.damage_modifiers) do
+        local modifiers = {}
+        for _, method in ipairs(cmo.damage_modifiers) do
             local damage = method(player, pointed_thing)
+            table.insert(modifiers, damage)
             modifier = modifier * (damage or 1)
         end
 
         -- damage unchanged, skip
         if modifier == last_modifier then return end
 
-        modifier = chance_round(modifier)
         for group, _ in pairs(tool_caps.damage_groups) do
             if table.indexof(cmo.skip_damage_groups, group) == -1 then
-                tool_caps.damage_groups[group] = real_caps[group] * modifier
+                tool_caps.damage_groups[group] = chance_round(real_caps[group] * modifier)
             end
         end
         meta:set_tool_capabilities(tool_caps)

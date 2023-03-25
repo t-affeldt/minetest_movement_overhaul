@@ -31,7 +31,7 @@ stds.minetest.read_globals = {
     "assert",
     "Raycast",
     table = { fields = { "copy", "indexof" } },
-    math = { fields = { "sign" } }
+    math = { fields = { "sign", "round" } }
 }
 
 stds.modpack = {}

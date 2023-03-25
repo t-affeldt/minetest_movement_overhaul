@@ -4,9 +4,9 @@ cmo_attacks.knockback_air (Knockback multiplier when in air) float 1 1.5 10
 
 cmo_attacks.knockback_elevation (Knockback multiplier from elevated positions) float 1.5 1 10
 
-cmo_attacks.backstabs (Damage multiplier from backstabs) float 2 1 10
+cmo_attacks.backstabs (Damage multiplier from backstabs) float 1.5 1 10
 
-cmo_attacks.movement_bonus (Damage multiplier from movement speed) float 2 1 10
+cmo_attacks.movement_bonus (Damage multiplier from movement speed) float 1.5 1 10
 
 cmo_attacks.stamina_drain (Stamina drain from missed swings) float 0.15 0 1
 

@@ -59,20 +59,21 @@ function cmo._get_pointed_thing(player)
     for pointed_thing in ray do
         if pointed_thing.type == "object" and pointed_thing.ref ~= player then
             local properties = pointed_thing.ref:get_properties()
-            if properties.pointable and properties.is_visible then
+            if properties.pointable ~= false and properties.is_visible ~= false then
                 result = pointed_thing
                 break
             end
         elseif pointed_thing.type == "node" then
-            local nodedef = minetest.registered_nodes[pointed_thing.under]
-            if nodedef and nodedef.pointable then
+            local node = minetest.get_node(pointed_thing.under)
+            local nodedef = minetest.registered_nodes[node.name]
+            if nodedef and nodedef.pointable ~= false then
                 result = pointed_thing
                 break
             end
-        elseif pointed_thing.type == "nothing" then
-            result = pointed_thing
-            break
         end
+    end
+    if result == nil then
+        result = { type = "nothing" }
     end
     playercache[name] = result
     return result
