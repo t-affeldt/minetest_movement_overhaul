@@ -1,6 +1,7 @@
--- damage modifier: minetest.register_on_punchplayer(function(player, hitter, time_from_last_punch, tool_capabilities, dir, damage)
+if cmo == nil then cmo = {} end
+local MODPATH = minetest.get_modpath(minetest.get_current_modname())
 
--- on_use = function(itemstack, user, pointed_thing)
+local mod_x_enchanting = minetest.get_modpath("x_enchanting") ~= nil
 
 local KNOCKBACK_HEIGHT_ADVANTAGE = tonumber(minetest.settings:get("cmo_attacks.knockback_elevation") or 1.5)
 local KNOCKBACK_HEIGHT_SCALE = 4
@@ -10,8 +11,9 @@ local MOVEMENT_DAMAGE_SCALE = 8
 local BACKSTAB_MAX_ANGLE = 90
 local BACKSTAB_DAMAGE_MULTIPLIER = tonumber(minetest.settings:get("cmo_attacks.backstabs") or 2)
 local MISS_PENALTY = tonumber(minetest.settings:get("cmo_attacks.stamina_drain") or 0.15)
-local MELEE_DISTANCE = 8
 local PLAY_ATTACK_SOUNDS = minetest.settings:get_bool("cmo_attacks.play_attack_sounds", true)
+
+local CYCLE_LENGTH = 0
 
 local function sound_play(...)
     if PLAY_ATTACK_SOUNDS then
@@ -19,14 +21,46 @@ local function sound_play(...)
     end
 end
 
+local function chance_round(num)
+    local rounded = math.floor(num)
+    if num - rounded > math.random() then
+        rounded = rounded + 1
+    end
+    return rounded
+end
+
+cmo.damage_modifiers = {}
+cmo.skip_damage_groups = {}
+
+function cmo.clean_itemstack(itemstack)
+    if not itemstack then return itemstack end
+    local itemdef = minetest.registered_tools[itemstack:get_name()]
+    -- skip if not a tool and thus wasn't modified
+    if not itemdef then return itemstack end
+    local meta = itemstack:get_meta()
+    local last_modifier = tonumber(meta:get_string("cmo_attacks:modifier")) or 1
+    if last_modifier == 1 then return itemstack end
+    local tool_caps = itemstack:get_tool_capabilities()
+    for group, val in pairs(tool_caps.damage_groups) do
+        if not table.contains(cmo.skip_damage_groups, group) then
+            tool_caps.damage_groups[group] = val / last_modifier
+        end
+    end
+    meta:set_tool_capabilities(tool_caps)
+    meta:set_string("cmo_attacks:modifier", "")
+    return itemstack
+end
+
+if mod_x_enchanting then
+    dofile(MODPATH .. DIR_DELIM .. "compatibility" .. DIR_DELIM .. "x_enchanting.lua")
+end
+
 local knockback_calc = minetest.calculate_knockback
 if KNOCKBACK_HEIGHT_ADVANTAGE > 1 or KNOCKBACK_AIR_BONUS > 1 then
     minetest.calculate_knockback = function(player, hitter, dtime, toolcaps, dir, distance, damage, ...)
         local knockback = knockback_calc(player, hitter, dtime, toolcaps, dir, distance, damage, ...)
-        -- skip if no damage dealt or target immortal
-        if damage == 0 or player:get_armor_groups().immortal then
-            return knockback
-        end
+        -- skip if no knockback dealt
+        if knockback == 0 then return knockback end
         local pos1 = player:get_pos()
         local pos2 = hitter:get_pos()
         -- do bonus knockback when positioned higher
@@ -52,63 +86,64 @@ end
 
 if MOVEMENT_DAMAGE_MULTIPLIER > 1 then
     -- do bonus damage based on relative movement speed
-    minetest.register_on_player_hpchange(function(player, hp_change, reason)
-        if hp_change >= 0 then return hp_change end
-        if reason.type ~= "punch" then return hp_change end
-        if not reason.object then return hp_change end
+    table.insert(cmo.damage_modifiers, function(player, pointed_thing)
+        if pointed_thing.type ~= "object" then return 1 end
         local speed1 = player:get_velocity()
-        local speed2 = reason.object:get_velocity()
+        local speed2 = pointed_thing.ref:get_velocity()
         local diff = vector.length(vector.subtract(speed1, speed2))
-        return hp_change * (MOVEMENT_DAMAGE_MULTIPLIER ^ math.min(diff / MOVEMENT_DAMAGE_SCALE, 1))
-    end, true)
+        local damage = MOVEMENT_DAMAGE_MULTIPLIER ^ math.min(diff / MOVEMENT_DAMAGE_SCALE, 1)
+        return damage
+    end)
 end
 
 if BACKSTAB_DAMAGE_MULTIPLIER > 1 then
-    -- do bonus damage for backstabs
-    minetest.register_on_player_hpchange(function(player, hp_change, reason)
-        if hp_change >= 0 then return hp_change end
-        if reason.type ~= "punch" then return hp_change end
-        if not reason.object or not reason.object:is_player() then return hp_change end
-        local lookdir = player:get_look_dir()
+    table.insert(cmo.damage_modifiers, function(player, pointed_thing)
+        if pointed_thing.type ~= "object" then return 1 end
+        -- determine look direction of pointed entity
+        local lookdir
+        if pointed_thing.ref:is_player() then
+            lookdir = pointed_thing.ref:get_look_dir()
+        elseif pointed_thing.ref.get_rotation then
+            lookdir = pointed_thing.ref:get_rotation()
+        else return 1
+        end
         -- vector from defender to attacker
-        local attacker_dir = vector.subtract(reason.object:get_pos(), player:get_pos())
+        local attacker_dir = vector.subtract(player:get_pos(), pointed_thing.ref:get_pos())
         local angle = vector.angle(lookdir, attacker_dir)
+        -- check if within critical angle
         local max_angle = BACKSTAB_MAX_ANGLE * math.pi / 180
         if 180 - (max_angle / 2) <= angle and angle <= 180 + (max_angle / 2) then
-            hp_change = hp_change * BACKSTAB_DAMAGE_MULTIPLIER
+            return BACKSTAB_DAMAGE_MULTIPLIER
         end
-        return hp_change
-    end, true)
+        return 1
+    end)
 end
 
 -- play sound effect on hit
-minetest.register_on_player_hpchange(function(player, hp_change, reason)
-    if hp_change >= 0 then return end
-    if reason.type ~= "punch" then return end
-    if not reason.object or not reason.object:is_player() then return end
-    local distance = vector.length(vector.subtract(player:get_pos(), reason.object:get_pos()))
-    if distance > MELEE_DISTANCE then return end
-    local sound = "cmo_hit_punch"
-    local itemstack = reason.object:get_wielded_item()
-    local itemname = (itemstack and itemstack:get_name()) or ""
-    if minetest.registered_tools[itemname] ~= nil then sound = "cmo_hit_tool" end
-    sound_play({ name = sound }, { to_player = reason.object:get_player_name() }, true)
-end, false)
+if PLAY_ATTACK_SOUNDS then
+    minetest.register_on_player_hpchange(function(player, hp_change, reason)
+        if hp_change >= 0 then return end
+        if reason.type ~= "punch" then return end
+        if not reason.object or not reason.object:is_player() then return end
+        if cmo._get_pointed_thing(reason.object).ref ~= player then return end
+        local sound = "cmo_hit_punch"
+        local itemstack = reason.object:get_wielded_item()
+        local itemname = (itemstack and itemstack:get_name()) or ""
+        if minetest.registered_tools[itemname] ~= nil then sound = "cmo_hit_tool" end
+        sound_play({ name = sound }, { to_player = reason.object:get_player_name() }, true)
+    end, false)
+end
 
 if MISS_PENALTY > 0 then
     -- prevent players from doing damage if out of stamina
-    minetest.register_on_player_hpchange(function(player, hp_change, reason)
-        if hp_change >= 0 then return hp_change end
-        if reason.type ~= "punch" then return hp_change end
-        if not reason.object or not reason.object:is_player() then return hp_change end
-        local distance = vector.length(vector.subtract(player:get_pos(), reason.object:get_pos()))
-        if distance > MELEE_DISTANCE then return hp_change end
-        local attacker_name = reason.object:get_player_name()
-        local stamina = unified_stamina.get(attacker_name)
-        if stamina >= MISS_PENALTY then return hp_change end
-        sound_play({ name = "cmo_hit_fail" }, { to_player = attacker_name }, true)
-        return 0, true
-    end, true)
+    table.insert(cmo.damage_modifiers, function(player)
+        local playername = player:get_player_name()
+        local stamina = unified_stamina.get(playername)
+        if stamina < MISS_PENALTY then
+            return 0
+        end
+        return 1
+    end)
 
     -- apply stamina penalty on missed hits
     controls.register_on_press(function(player, control_name)
@@ -150,3 +185,49 @@ if MISS_PENALTY > 0 then
         end
     end)
 end
+
+local timer = 0
+minetest.register_globalstep(function(dtime)
+    if #cmo.damage_modifiers == 0 then return end
+    timer = timer + dtime
+    if timer < CYCLE_LENGTH then return end
+    local players = minetest.get_connected_players()
+    for _, player in ipairs(players) do
+        local itemstack = player:get_wielded_item()
+        local itemdef = minetest.registered_tools[itemstack:get_name()]
+        -- skip if not a tool and thus shouldn't be modified
+        if not itemdef then return end
+        local tool_caps = itemstack:get_tool_capabilities()
+        -- skip if tool doesn't have any damage groups
+        if not tool_caps.damage_groups or not next(tool_caps.damage_groups) then return end
+        local pointed_thing = cmo._get_pointed_thing(player)
+
+        local meta = itemstack:get_meta()
+        -- NOTE: use string instead of int to set default to 1 instead of 0
+        local last_modifier = tonumber(meta:get_string("cmo_attacks:modifier")) or 1
+
+        local modifier = 1
+        for _, method in pairs(cmo.damage_modifiers) do
+            local damage = method(player, pointed_thing)
+            modifier = modifier * (damage or 1)
+        end
+
+        -- damage unchanged, skip
+        if modifier == last_modifier then return end
+
+        modifier = chance_round(modifier)
+        for group, val in pairs(tool_caps.damage_groups) do
+            if not table.contains(cmo.skip_damage_groups, group) then
+                tool_caps.damage_groups[group] = val * modifier / last_modifier
+            end
+        end
+        meta:set_tool_capabilities(tool_caps)
+        if modifier == 1 then
+            meta:set_string("cmo_attacks:modifier", "")
+        else
+            meta:set_string("cmo_attacks:modifier", "" .. modifier)
+        end
+        player:set_wielded_item(itemstack)
+    end
+    timer = 0
+end)

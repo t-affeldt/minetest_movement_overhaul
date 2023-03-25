@@ -1,14 +1,27 @@
+if cmo == nil then cmo = {} end
+
 local PLACE_BLOOD = minetest.settings:get_bool("cmo_blood.place_blood", true)
 local FIX_REMOVED_BLOOD = minetest.settings:get_bool("cmo_blood.fix_removed_blood", false)
 local HIT_EFFECTS = minetest.settings:get_bool("cmo_blood.hit_effects", true)
 local MAX_PARTICLES = math.floor(tonumber(minetest.settings:get("cmo_blood.hit_particles") or 20))
 local BLEEDING = minetest.settings:get_bool("cmo_blood.bleeding", true)
 
+-- skip particle generation on old API pre MT-5.6.0
+if not minetest.features.particlespawner_tweenable then
+    HIT_EFFECTS = false
+    BLEEDING = false
+end
+
 local VARIANT_COUNT = 4
 local CHECK_DISTANCE = 3
 local NODE_CHANCE = 8
 
 local HEALTH_BLEEDING_THRESHOLD = 0.3
+
+function cmo.trigger_bleeding_fx(player, health)
+    health = health / minetest.PLAYER_MAX_HP_DEFAULT
+    return health <= HEALTH_BLEEDING_THRESHOLD
+end
 
 local function scale(val, min, max)
     if val <= min then return min end
@@ -19,10 +32,6 @@ end
 local function start_timer(pos)
     local timer = minetest.get_node_timer(pos)
     timer:start(20)
-end
-
-local function remove_node(pos)
-    minetest.remove_node(pos)
 end
 
 local node_box = {
@@ -63,7 +72,7 @@ for i = 1, VARIANT_COUNT do
                 },
                 drop = "",
                 on_construct = start_timer,
-                on_timer = remove_node
+                on_timer = minetest.remove_node
             })
         elseif FIX_REMOVED_BLOOD then
             minetest.register_node(name, {
@@ -81,7 +90,7 @@ for i = 1, VARIANT_COUNT do
                     removed_blood = 1
                 },
                 drop = "",
-                on_timer = remove_node
+                on_timer = minetest.remove_node
             })
         end
     end
@@ -195,11 +204,12 @@ local spawners = {}
 if BLEEDING then
     local function player_bleeding(player, hp_change)
         local name = player:get_player_name()
-        local health = (player:get_hp() + hp_change) / minetest.PLAYER_MAX_HP_DEFAULT
+        local health = (player:get_hp() + hp_change)
+        local should_bleed = cmo.trigger_bleeding_fx(player, health)
         local gravity = -((player:get_properties()).gravity or 1) * 9.81
         local eye_height = (player:get_properties()).eye_height
         local max_radius = vector.new({ x = 0.5, y = math.min(1, eye_height / 2), z = 0.5 })
-        if health <= HEALTH_BLEEDING_THRESHOLD and spawners[name] == nil then
+        if should_bleed and spawners[name] == nil then
             spawners[name] = minetest.add_particlespawner({
                 amount = 4,
                 time = 0,
@@ -219,7 +229,7 @@ if BLEEDING then
                 exptime = { min = 0.2, max = 0.5 }
             })
             if spawners[name] == -1 then spawners[name] = nil end
-        elseif health > HEALTH_BLEEDING_THRESHOLD and spawners[name] ~= nil then
+        elseif not should_bleed and spawners[name] ~= nil then
             minetest.delete_particlespawner(spawners[name])
             spawners[name] = nil
         end

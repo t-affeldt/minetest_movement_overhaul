@@ -30,7 +30,7 @@ function cmo._get_pointed_thing(player)
     if not player or not player:is_player() then return nil end
 
     -- return cached value if already requested this cycle
-    local name = player:get_playername()
+    local name = player:get_player_name()
     if playercache[name] ~= nil then
         return playercache[name]
     end

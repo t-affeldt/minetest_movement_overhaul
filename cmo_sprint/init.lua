@@ -1,10 +1,14 @@
 if cmo == nil then cmo = {} end
+local MODPATH = minetest.get_modpath(minetest.get_current_modname())
+
+local mod_mcl_sprint = minetest.get_modpath("mod_mcl_sprint") ~= nil
+if mod_mcl_sprint then
+    dofile(MODPATH .. DIR_DELIM .. "compatibility" .. DIR_DELIM .. "mcl_sprint.lua")
+end
 
 local SPRINT_SPEED_BOOST = 1.4
 local SPRINT_JUMP_BOOST = 1.3
 local SPRINT_STAMINA_COST = 10
-
-local MODPATH = minetest.get_modpath(minetest.get_current_modname())
 
 dofile(MODPATH .. DIR_DELIM .. "stamina.lua")
 

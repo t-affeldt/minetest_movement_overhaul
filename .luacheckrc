@@ -3,6 +3,7 @@ std = "luajit+minetest"
 ignore = { "212" }
 
 files[".luacheckrc"].std = "min+luacheck"
+files["cmo_attacks"].std = std .. "+attacks_deps"
 files["cmo_dodge"].std = std .. "+dodge_deps"
 files["cmo_fx"].std = std .. "+fx_deps"
 
@@ -31,6 +32,11 @@ stds.minetest.read_globals = {
     "Raycast",
     table = { fields = { "copy", "indexof" } },
     math = { fields = { "sign" } }
+}
+
+stds.attacks_deps = {}
+stds.attacks_deps.read_globals = {
+    "XEnchanting"
 }
 
 stds.dodge_deps = {}
