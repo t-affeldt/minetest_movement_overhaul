@@ -67,7 +67,6 @@ minetest.register_globalstep(function(dtime)
     if timer < CYCLE_LENGTH then return end
 
     for playername, _ in pairs(blocking_players) do
-        --minetest.log(dump2(-BLOCK_STAMINA_COST * timer, "val"))
         unified_stamina.add(playername, -BLOCK_STAMINA_COST * timer)
     end
 

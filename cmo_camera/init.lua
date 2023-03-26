@@ -59,7 +59,7 @@ minetest.register_globalstep(function(dtime)
         else
             -- don't send very small changes
             -- allow timer to build up if destination hasn't been reached yet
-            if distance > OFFSET_THRESHOLD or timer then
+            if distance > OFFSET_THRESHOLD then
                 timer = 0
             elseif timer > CATCHUP_TIME then
                 timer = CATCHUP_TIME

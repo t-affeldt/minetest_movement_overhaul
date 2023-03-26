@@ -10,8 +10,6 @@ local SPRINT_SPEED_BOOST = 1.4
 local SPRINT_JUMP_BOOST = 1.3
 local SPRINT_STAMINA_COST = 10
 
-dofile(MODPATH .. DIR_DELIM .. "stamina.lua")
-
 cmo.sprint = {}
 
 -- override this for custom requirements
@@ -21,7 +19,8 @@ cmo.sprint.allow_sprint = function(player)
         return false
     end
     local stamina = cmo.stamina.get(playername)
-    if stamina < SPRINT_STAMINA_COST then
+    local cycle = math.max(cmo.stamina.UPDATE_CYCLE, 0.1)
+    if stamina < SPRINT_STAMINA_COST * cycle then
         return false
     end
     return true
@@ -54,3 +53,11 @@ local function do_sprint(player, dtime)
         stop_sprint(player)
     end
 end
+
+--[[minetest.register_on_joinplayer(function(player)
+    --if not player then return end
+    minetest.after(2, function()
+        player_monoids.speed:add_change(player, 0, "stop_movement" )
+        player:add_velocity(vector.new({ x = 10, y = 0, z = 0 }))
+    end)
+end)]]

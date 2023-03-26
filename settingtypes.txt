@@ -30,6 +30,8 @@ cmo_fx.desaturate (Desaturate screen on low attributes) bool true
 
 cmo_tweaks.hide_nametag (Hide player nametag when sneaking) bool true
 
+cmo_tweaks.hide_on_minimap (Hide player on minimap while sneaking) bool true
+
 cmo_blood.place_blood (Occasionally place blood when hit) bool true
 
 cmo_blood.fix_removed_blood (Hide unknown nodes after disabling blood placement) bool false

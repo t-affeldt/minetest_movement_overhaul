@@ -3,6 +3,7 @@ local mod_name_monoid = minetest.get_modpath("name_monoid") ~= nil
 local RESTRICT_AIR_MOVEMENT = minetest.settings:get_bool("cmo_tweaks.restrict_air", true)
 local MUTE_SNEAK_FOOTSTEPS = minetest.settings:get_bool("cmo_tweaks.mute_sneak_footsteps", true)
 local HIDE_NAMETAG = minetest.settings:get_bool("cmo_tweaks.hide_nametag", true)
+local HIDE_ON_MINIMAP = minetest.settings:get_bool("cmo_tweaks.hide_on_minimap", true)
 
 local CYCLE_LENGTH = 0.2
 
@@ -40,7 +41,8 @@ if RESTRICT_AIR_MOVEMENT then
     end)
 end
 
-if MUTE_SNEAK_FOOTSTEPS or HIDE_NAMETAG then
+local detect_sneak = MUTE_SNEAK_FOOTSTEPS or HIDE_NAMETAG or HIDE_ON_MINIMAP
+if detect_sneak then
     controls.register_on_press(function(player, control_name)
         if control_name ~= "sneak" then return end
         if MUTE_SNEAK_FOOTSTEPS then
@@ -55,6 +57,9 @@ if MUTE_SNEAK_FOOTSTEPS or HIDE_NAMETAG then
                 nametag.color.a = 0
                 player:set_nametag_attributes(nametag)
             end
+        end
+        if HIDE_ON_MINIMAP then
+            player:set_properties({ show_on_minimap = false })
         end
     end)
 
@@ -71,6 +76,9 @@ if MUTE_SNEAK_FOOTSTEPS or HIDE_NAMETAG then
                 nametag.color.a = 255
                 player:set_nametag_attributes(nametag)
             end
+        end
+        if HIDE_ON_MINIMAP then
+            player:set_properties({ show_on_minimap = true })
         end
     end)
 end

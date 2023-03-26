@@ -1,15 +1,13 @@
-local CYCLE_LENGTH = 1
-
-local REGEN_RATE = 0.1
-
 cmo.stamina = {}
+cmo.stamina.REGEN_RATE_DEFAULT = 0.1
+cmo.stamina.UPDATE_CYCLE = 0.5
 
 -- override this for custom conditions
-cmo.regen_rate = function(playername, dtime)
-    return REGEN_RATE * dtime
+function cmo.stamina.regen_rate(playername, dtime)
+    return cmo.stamina.REGEN_RATE_DEFAULT * dtime
 end
 
-cmo.stamina.set = function(playername, value)
+function cmo.stamina.set(playername, value)
     local player = minetest.get_player_by_name(playername)
     if not player or not player:is_player() then
         return -1
@@ -20,7 +18,7 @@ cmo.stamina.set = function(playername, value)
     return value
 end
 
-cmo.stamina.get = function(playername)
+function cmo.stamina.get(playername)
     local player = minetest.get_player_by_name(playername)
     if not player or not player:is_player() then
         return -1
@@ -29,7 +27,7 @@ cmo.stamina.get = function(playername)
     return meta:get_float("cmo_sprint:stamina")
 end
 
-cmo.stamina.add = function(playername, value)
+function cmo.stamina.add(playername, value)
     local player = minetest.get_player_by_name(playername)
     if not player or not player:is_player() then
         return -1
@@ -46,12 +44,12 @@ local timer = 0
 minetest.register_globalstep(function(dtime)
     -- skip if not enough time has passed
     timer = timer + dtime
-    if timer < CYCLE_LENGTH then return end
+    if timer < cmo.stamina.UPDATE_CYCLE then return end
 
     local playerlist = minetest.get_connected_players()
     for _, player in pairs(playerlist) do
         local name = player:get_player_name()
-        local stamina_regen = cmo.regen_rate(name, dtime)
+        local stamina_regen = cmo.stamina.regen_rate(name, dtime)
         if stamina_regen ~= 0 then
             cmo.stamina.add(name, stamina_regen)
         end

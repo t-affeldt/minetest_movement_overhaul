@@ -13,11 +13,12 @@ This is an overhaul for Minetest's movement system.
 - no damage dealt if out of stamina
 
 ### CMO Blood Effects
-- particle effects upon taking damage, based on type
+- particle effects upon taking damage, based on damage type
 - particle effect when low on health
 - taking damage has a chance to place blood on the ground
 
 ### CMO Camera Overhaul
+(only enabled in singleplayer by default)
 - 3rd person camera follows lazily instead of centering on player
 
 ### CMO Dodge
@@ -30,6 +31,7 @@ This is an overhaul for Minetest's movement system.
 - greatly reduced movability while in the air (unless allowed to fly)
 - muted footstep sounds while sneaking
 - nametag hidden while sneaking
+- position on minimap hidden while sneaking
 
 ### CMO Effects
 - vignette effect based on player health
@@ -41,4 +43,5 @@ This is an overhaul for Minetest's movement system.
 - new inidcator showing how much the weapon has charged up again since the last punch
 
 ## License
-Code licensed under GNU LGPL v3. Textures licensed under CC BY-SA 4.0
+Code licensed under GNU LGPL v3. Media assets licensed under CC BY-SA 4.0.
+Check individual mods for media sources. (c) Till Affeldt, if unspecified.

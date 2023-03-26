@@ -193,6 +193,58 @@ if MISS_PENALTY > 0 then
     end)
 end
 
+local function modify_player_damage(player)
+    local itemstack = player:get_wielded_item()
+    local itemdef = minetest.registered_tools[itemstack:get_name()]
+    -- skip if not a tool and thus shouldn't be modified
+    if not itemdef then return end
+    local tool_caps = itemstack:get_tool_capabilities()
+    -- skip if tool doesn't have any damage groups
+    if not tool_caps.damage_groups or not next(tool_caps.damage_groups) then return end
+    local pointed_thing = cmo._get_pointed_thing(player)
+
+    local meta = itemstack:get_meta()
+    -- NOTE: use string instead of int to set default to 1 instead of 0
+    local last_modifier = tonumber(meta:get_string("cmo_attacks:modifier")) or 1
+    local real_caps = meta:get_string("cmo_attacks:real_capabilities")
+    local store_caps = false
+    if real_caps == "" then
+        store_caps = true
+        real_caps = table.copy(tool_caps.damage_groups)
+    else
+        real_caps = minetest.deserialize(real_caps, true)
+    end
+
+    local modifier = 1
+    local modifiers = {}
+    for _, method in ipairs(cmo.damage_modifiers) do
+        local damage = method(player, pointed_thing)
+        table.insert(modifiers, damage)
+        modifier = modifier * (damage or 1)
+    end
+
+    -- damage unchanged, skip
+    if modifier == last_modifier then return end
+
+    for group, _ in pairs(real_caps) do
+        if table.indexof(cmo.skip_damage_groups, group) == -1 then
+            tool_caps.damage_groups[group] = chance_round(real_caps[group] * modifier)
+        end
+    end
+    meta:set_tool_capabilities(tool_caps)
+    if modifier == 1 then
+        meta:set_string("cmo_attacks:modifier", "")
+        meta:set_string("cmo_attacks:real_capabilities", "")
+    else
+        if store_caps then
+            local serialized = minetest.serialize(real_caps)
+            meta:set_string("cmo_attacks:real_capabilities", serialized)
+        end
+        meta:set_string("cmo_attacks:modifier", "" .. modifier)
+    end
+    player:set_wielded_item(itemstack)
+end
+
 local timer = 0
 minetest.register_globalstep(function(dtime)
     if #cmo.damage_modifiers == 0 then return end
@@ -200,56 +252,7 @@ minetest.register_globalstep(function(dtime)
     if timer < CYCLE_LENGTH then return end
     local players = minetest.get_connected_players()
     for _, player in ipairs(players) do
-
-        local itemstack = player:get_wielded_item()
-        local itemdef = minetest.registered_tools[itemstack:get_name()]
-        -- skip if not a tool and thus shouldn't be modified
-        if not itemdef then return end
-        local tool_caps = itemstack:get_tool_capabilities()
-        -- skip if tool doesn't have any damage groups
-        if not tool_caps.damage_groups or not next(tool_caps.damage_groups) then return end
-        local pointed_thing = cmo._get_pointed_thing(player)
-
-        local meta = itemstack:get_meta()
-        -- NOTE: use string instead of int to set default to 1 instead of 0
-        local last_modifier = tonumber(meta:get_string("cmo_attacks:modifier")) or 1
-        local real_caps = meta:get_string("cmo_attacks:real_capabilities")
-        local store_caps = false
-        if real_caps == "" then
-            store_caps = true
-            real_caps = tool_caps.damage_groups
-        else
-            real_caps = minetest.deserialize(real_caps, true)
-        end
-
-        local modifier = 1
-        local modifiers = {}
-        for _, method in ipairs(cmo.damage_modifiers) do
-            local damage = method(player, pointed_thing)
-            table.insert(modifiers, damage)
-            modifier = modifier * (damage or 1)
-        end
-
-        -- damage unchanged, skip
-        if modifier == last_modifier then return end
-
-        for group, _ in pairs(tool_caps.damage_groups) do
-            if table.indexof(cmo.skip_damage_groups, group) == -1 then
-                tool_caps.damage_groups[group] = chance_round(real_caps[group] * modifier)
-            end
-        end
-        meta:set_tool_capabilities(tool_caps)
-        if modifier == 1 then
-            meta:set_string("cmo_attacks:modifier", "")
-            meta:set_string("cmo_attacks:real_capabilities", "")
-        else
-            if store_caps then
-                local serialized = minetest.serialize(real_caps)
-                meta:set_string("cmo_attacks:real_capabilities", serialized)
-            end
-            meta:set_string("cmo_attacks:modifier", "" .. modifier)
-        end
-        player:set_wielded_item(itemstack)
+        modify_player_damage(player)
     end
     timer = 0
 end)
