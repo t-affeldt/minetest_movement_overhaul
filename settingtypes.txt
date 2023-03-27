@@ -28,13 +28,7 @@ cmo_fx.vignette (Enable vignette on low health) bool true
 
 cmo_fx.desaturate (Desaturate screen on low attributes) bool true
 
-cmo_tweaks.hide_nametag (Hide player nametag when sneaking) bool true
-
-cmo_tweaks.hide_on_minimap (Hide player on minimap while sneaking) bool true
-
 cmo_blood.place_blood (Occasionally place blood when hit) bool true
-
-cmo_blood.fix_removed_blood (Hide unknown nodes after disabling blood placement) bool false
 
 cmo_blood.hit_effects (Spawn particles upon taking damage) bool true
 
@@ -42,9 +36,17 @@ cmo_blood.hit_particles (Maximum amount of particles to spawn upon taking damage
 
 cmo_blood.bleeding (Spawn particles when low on health) bool true
 
+[User Interface]
+
 cmo_camera.enabled (Enable enhanced 3rd person camera) bool true
 
 cmo_camera.multiplayer (Enhanced camera in multiplayer. Can cause lag.) bool false
+
+cmo_tweaks.hide_nametag (Hide player nametag when sneaking) bool true
+
+cmo_tweaks.hide_on_minimap (Hide player on minimap while sneaking) bool true
+
+cmo_stamina.autohide_hudbar (Hide stamina bar when full) bool true
 
 [Audio Effects]
 
@@ -53,3 +55,7 @@ cmo_attacks.play_attack_sounds (Play attack sounds) bool true
 cmo_tweaks.mute_sneak_footsteps (Silence footsteps while sneaking) bool true
 
 cmo_fx.heartbeat (Play heartbeat sound on low health) bool true
+
+[Debug]
+
+cmo_blood.fix_removed_blood (Hide unknown nodes after disabling blood placement) bool false

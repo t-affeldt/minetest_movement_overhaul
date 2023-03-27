@@ -2,9 +2,6 @@
 
 ## Resources
 
-### Unified Stamina API
-- fix warnings about unused globals
-
 ### Offhand
 - hold right-click to switch items (?)
 

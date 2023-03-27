@@ -14,7 +14,7 @@ end
 
 local VARIANT_COUNT = 4
 local CHECK_DISTANCE = 3
-local NODE_CHANCE = 8
+local NODE_CHANCE = 6
 
 local HEALTH_BLEEDING_THRESHOLD = 0.3
 
@@ -122,6 +122,10 @@ if PLACE_BLOOD then
         if not player or hp_change >= 0 then return end
         local damage = -hp_change / minetest.PLAYER_MAX_HP_DEFAULT
         local should_place = damage ^ (1 / NODE_CHANCE) >= math.random()
+        local health = player:get_hp() + hp_change
+        if health <= 0 then
+            should_place = true
+        end
         if should_place then
             local pos = player:get_pos()
             place_blood(pos)

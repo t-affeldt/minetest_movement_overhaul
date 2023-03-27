@@ -1,6 +1,9 @@
+if cmo == nil then cmo = {} end
+local MODPATH = minetest.get_modpath(minetest.get_current_modname())
+
 cmo.stamina = {}
-cmo.stamina.REGEN_RATE_DEFAULT = 0.1
-cmo.stamina.UPDATE_CYCLE = 0.5
+cmo.stamina.REGEN_RATE_DEFAULT = 0.05
+cmo.stamina.UPDATE_CYCLE = 0.2
 
 -- override this for custom conditions
 function cmo.stamina.regen_rate(playername, dtime)
@@ -15,6 +18,7 @@ function cmo.stamina.set(playername, value)
     local meta = player:get_meta()
     value = math.max(math.min(value, 1), 0)
     meta:set_float("cmo_sprint:stamina", value)
+    cmo.stamina._update_bar(player, value)
     return value
 end
 
@@ -36,8 +40,11 @@ function cmo.stamina.add(playername, value)
     local current = meta:get_float("cmo_sprint:stamina")
     local override = math.max(math.min(current + value, 1), 0)
     meta:set_float("cmo_sprint:stamina", override)
+    cmo.stamina._update_bar(player, override)
     return override
 end
+
+dofile(MODPATH .. DIR_DELIM .. "hudbars.lua")
 
 -- passively regenerate stamina
 local timer = 0
@@ -49,7 +56,7 @@ minetest.register_globalstep(function(dtime)
     local playerlist = minetest.get_connected_players()
     for _, player in pairs(playerlist) do
         local name = player:get_player_name()
-        local stamina_regen = cmo.stamina.regen_rate(name, dtime)
+        local stamina_regen = cmo.stamina.regen_rate(name, timer)
         if stamina_regen ~= 0 then
             cmo.stamina.add(name, stamina_regen)
         end
@@ -59,7 +66,7 @@ minetest.register_globalstep(function(dtime)
 end)
 
 -- reset stamina bar upon respawn
-minetest.register_on_player_hp_change(function(player, hp_change, reason)
+minetest.register_on_player_hpchange(function(player, hp_change, reason)
     if reason ~= "respawn" then return end
     local playername = player:get_player_name()
     cmo.stamina.set(playername, 1)

@@ -1,0 +1,3 @@
+# textdomain:cmo_stamina
+Stamina=
+@1: @2%=

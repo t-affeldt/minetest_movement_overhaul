@@ -27,6 +27,10 @@ This is an overhaul for Minetest's movement system.
 - dodge moves player into specified direction quickly
 - short time of being invulnerable and unpointable
 
+### CMO Stamina + Sprint
+- sprint mod with movement commitment
+- accelerating, breaking, and turning takes time
+
 ### CMO Movement Tweaks
 - greatly reduced movability while in the air (unless allowed to fly)
 - muted footstep sounds while sneaking
