@@ -26,10 +26,12 @@ This is an overhaul for Minetest's movement system.
 - costs stamina and can only be performed if sufficient stamina is left
 - dodge moves player into specified direction quickly
 - short time of being invulnerable and unpointable
+- melee PvP damage is delayed until after punch animation
 
 ### CMO Stamina + Sprint
 - sprint mod with movement commitment
 - accelerating, breaking, and turning takes time
+- stamina system compatible with other sprint mods (so far: *hbsprint, wadsprint, sprint_lite, real_stamina*)
 
 ### CMO Movement Tweaks
 - greatly reduced movability while in the air (unless allowed to fly)
@@ -45,6 +47,7 @@ This is an overhaul for Minetest's movement system.
 
 ### CMO HUD Additions
 - new inidcator showing how much the weapon has charged up again since the last punch
+- hides completely filled bars of supported mods (so far: *mana, hbhunger*), requires *hudbars*
 
 ## License
 Code licensed under GNU LGPL v3. Media assets licensed under CC BY-SA 4.0.

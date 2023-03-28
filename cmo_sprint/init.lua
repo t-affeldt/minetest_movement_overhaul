@@ -1,16 +1,20 @@
 if cmo == nil then cmo = {} end
 local MODPATH = minetest.get_modpath(minetest.get_current_modname())
 
+if not minetest.settings:get_bool("cmo_sprint.enabled", true) then return end
+
 local mod_mcl_sprint = minetest.get_modpath("mod_mcl_sprint") ~= nil
 if mod_mcl_sprint then
     dofile(MODPATH .. DIR_DELIM .. "compatibility" .. DIR_DELIM .. "mcl_sprint.lua")
 end
 
+local SLIDING_ENABLED = minetest.settings:get_bool("cmo_sprint.sliding_enabled", true)
+local MAX_SPEED = tonumber(minetest.settings:get("cmo_sprint.max_speed") or 15)
+local SPRINT_STAMINA_COST = tonumber(minetest.settings:get("cmo_sprint.stamina_cost") or 0.05)
+
 local SPRINT_BOOST = 20
 local MOVEMENT_CONTROL = 0.5
 local SPRINT_JUMP_BOOST = 0.5
-local SPRINT_STAMINA_COST = 0.05
-local MAX_SPEED = 15
 
 local CYCLE_LENGTH = 0.2
 
@@ -49,10 +53,14 @@ cmo.stamina.regen_rate = function(playername, ...)
 end
 
 local function ready_sprint(player)
-    --if not cmo.sprint.allow_sprint(player) then return end
+    if not cmo.sprint.allow_sprint(player) then return end
     local playername = player:get_player_name()
     if stopping_players[playername] then return end
     sprinting_players[playername] = true
+    -- remove walking speed modifiers
+    if cmo.purge_base_modifiers ~= nil then
+        cmo.purge_base_modifiers(player)
+    end
     cmo.stamina.highlight_bar(player, true)
     player_monoids.speed:add_change(player, MOVEMENT_CONTROL, "cmo_sprint:sprint_boost")
 end
@@ -62,6 +70,10 @@ local function stop_sprint(player)
     sprinting_players[playername] = nil
     stopping_players[playername] = true
     minetest.after(1.5, function()
+        -- reapply walking speed modifiers
+        if cmo.apply_base_modifiers ~= nil then
+            cmo.apply_base_modifiers(player)
+        end
         cmo.stamina.highlight_bar(player, false)
         player_monoids.speed:del_change(player, "cmo_sprint:sprint_boost")
         player_monoids.jump:del_change(player, "cmo_sprint:sprint_boost")
@@ -81,6 +93,11 @@ local function do_sprint(player, controls, dtime)
     end
     if not cmo._is_grounded(player) then
         return
+    end
+    -- initiate slide when tapping sneak key
+    if SLIDING_ENABLED and controls.sneak then
+        player_monoids.speed:add_change(player, 0.1, "cmo_sprint:sprint_boost")
+        stop_sprint(player)
     end
     local movement = vector.new({ x = 0, y = 0, z = 0 })
     for key, dir in pairs(directions) do

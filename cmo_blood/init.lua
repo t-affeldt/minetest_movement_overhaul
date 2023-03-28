@@ -155,9 +155,11 @@ end, false)]]
 
 -- spawn particles upon getting hit
 if HIT_EFFECTS then
+    local valid_reasons = { punch = true, fall = true, node_damage = true, set_hp = true }
     minetest.register_on_player_hpchange(function(player, hp_change, reason)
         if not player or hp_change >= 0 then return end
-        if reason.type ~= "punch" and reason.type ~= "fall" and reason.type ~= "node_damage" then return end
+        if reason.type ~= nil and not valid_reasons[reason.type] then return end
+        if reason.type == "set_hp" and reason.subtype ~= "delay_punch" then return end
         local pos = vector.new({ x = 0, y = 0, z = 0 })
         local spawner_pos = pos
         local gravity = -((player:get_properties()).gravity or 1) * 9.81

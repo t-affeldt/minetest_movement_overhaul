@@ -7,9 +7,6 @@
 
 ## Improvements
 
-### CMO Attacks
-- apply damage *after* hit animation
-
 ### CMO Blood
 - blood on HUD
 - blood on walls
@@ -24,7 +21,6 @@
 - particle effects
 
 ### CMO FX
-- redesign vignette
 - breathing sound (?) on low stamina
 
 ## To Do
@@ -35,7 +31,6 @@
 - sprinting
   - faster walk animation
   - lower fov
-  - sliding when sneaking while sprinting (lay animation, lower hitbox)
 - fix player_api animations
   - only short punch when mining air
   - no punch when right-clicking and shield equipped in offhand

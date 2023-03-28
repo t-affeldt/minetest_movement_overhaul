@@ -13,7 +13,7 @@ local CYCLE_LENGTH = 0.1
 
 local players = {}
 
-local VIGNETTE_OPACITY_MIN = 64
+local VIGNETTE_OPACITY_MIN = 0
 local VIGNETTE_OPACITY_MAX = 255
 local HEARTBEAT_THRESHOLD = 0.3
 

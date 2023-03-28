@@ -4,9 +4,34 @@ local mod_hud_timers = minetest.get_modpath("hud_timers") ~= nil
 
 local MAX_KEY_TIME = 0.8
 local INVULNERABILTY_TIME = 1
+local PUNCH_DELAY = 1
 
+local DELAY_DAMAGE = minetest.settings:get_bool("cmo_dodge.delay_damage", true)
 local STAMINA_COST = tonumber(minetest.settings:get("cmo_dodge.stamina_cost") or 0.2)
-local SPEED_BOOST = tonumber(minetest.settings:get("cmo_dodge.speed_boost") or 15)
+local SPEED_BOOST = tonumber(minetest.settings:get("cmo_dodge.speed_boost") or 20)
+
+if DELAY_DAMAGE then
+    -- delay PvP punch damage until after animation
+    minetest.after(0, function() -- ensure this gets called last
+        minetest.register_on_player_hpchange(function(player, hp_change, reason)
+            if hp_change >= 0 or reason.type ~= "punch" then
+                return hp_change
+            end
+            if reason.object == nil or not reason.object:is_player() then
+                return hp_change
+            end
+            minetest.after(PUNCH_DELAY, function()
+                local health = player:get_hp() + hp_change
+                player:set_hp(health, {
+                    type = "set_hp",
+                    subtype = "punch_delay",
+                    object = reason.object
+                })
+            end)
+            return 0, true
+        end, true)
+    end)
+end
 
 local directions = {
     left = vector.new({ x = -1, y = 0, z = 0 }),
@@ -18,7 +43,8 @@ local directions = {
 local players = {}
 
 minetest.register_on_player_hpchange(function(player, hp_change, reason)
-    if reason.type ~= "punch" then return hp_change end
+    if reason.type ~= "punch" and reason.type ~= "set_hp" then return hp_change end
+    if reason.type == "set_hp" and reason.subtype ~= "punch_delay" then return hp_change end
     local name = player:get_player_name()
     if players[name] ~= nil and players[name].state == "active" then
         return 0, true

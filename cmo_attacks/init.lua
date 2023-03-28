@@ -7,7 +7,8 @@ local KNOCKBACK_HEIGHT_ADVANTAGE = tonumber(minetest.settings:get("cmo_attacks.k
 local KNOCKBACK_HEIGHT_SCALE = 4
 local KNOCKBACK_AIR_BONUS = tonumber(minetest.settings:get("cmo_attacks.knockback_air") or 1.5)
 local MOVEMENT_DAMAGE_MULTIPLIER = tonumber(minetest.settings:get("cmo_attacks.movement_bonus") or 1.5)
-local MOVEMENT_DAMAGE_SCALE = 8
+local MOVEMENT_DAMAGE_MINSPEED = 5
+local MOVEMENT_DAMAGE_MAXSCALE = 10
 local BACKSTAB_MAX_ANGLE = 90
 local BACKSTAB_DAMAGE_MULTIPLIER = tonumber(minetest.settings:get("cmo_attacks.backstabs") or 1.5)
 local MISS_PENALTY = tonumber(minetest.settings:get("cmo_attacks.stamina_drain") or 0.15)
@@ -98,8 +99,9 @@ if MOVEMENT_DAMAGE_MULTIPLIER > 1 then
         if pointed_thing.type ~= "object" then return 1 end
         local speed1 = player:get_velocity()
         local speed2 = pointed_thing.ref:get_velocity()
-        local diff = vector.length(vector.subtract(speed1, speed2))
-        local damage = MOVEMENT_DAMAGE_MULTIPLIER ^ math.min(diff / MOVEMENT_DAMAGE_SCALE, 1)
+        local diff = vector.length(vector.subtract(speed1, speed2)) - MOVEMENT_DAMAGE_MINSPEED
+        local scale = math.max(math.min(diff / (MOVEMENT_DAMAGE_MAXSCALE - MOVEMENT_DAMAGE_MINSPEED), 1), 0)
+        local damage = 1 + (scale * (MOVEMENT_DAMAGE_MULTIPLIER - 1))
         damage = math.round(damage * 4) / 4
         return damage
     end)

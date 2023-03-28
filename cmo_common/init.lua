@@ -79,6 +79,9 @@ function cmo._get_pointed_thing(player)
     return result
 end
 
-minetest.register_globalstep(function()
-    playercache = {}
+-- clear cache after all other actions have been performed
+minetest.after(0, function()
+    minetest.register_globalstep(function()
+        playercache = {}
+    end)
 end)

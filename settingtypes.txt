@@ -1,5 +1,7 @@
 [Combat]
 
+cmo_dodge.delay_damage (Delay melee PvP damage until end of punch animation) bool true
+
 cmo_attacks.knockback_air (Knockback multiplier when in air) float 1 1.5 10
 
 cmo_attacks.knockback_elevation (Knockback multiplier from elevated positions) float 1.5 1 10
@@ -12,13 +14,21 @@ cmo_attacks.stamina_drain (Stamina drain from missed swings) float 0.15 0 1
 
 [Movement]
 
+cmo_sprint.enabled (Enable sprinting) bool true
+
+cmo_sprint.max_speed (Max sprinting speed) float 15 5 30
+
+cmo_sprint.stamina_cost (Sprinting stamina cost) float 0.05 0 1
+
+cmo_sprint.sliding_enabled (Enable sliding) bool true
+
 cmo_dodge.enabled (Enable dodge move) bool true
 
 # The amount of stamina consumed by a dodge action. zero = no costs, one = 100% of the stamina bar
 cmo_dodge.stamina_cost (Dodging stamina cost) float 0.2 0 1
 
 # The amount of force applied to the player upon performing a dodge.
-cmo_dodge.speed_boost (Dodging speed boost) float 15 0 100
+cmo_dodge.speed_boost (Dodging speed boost) float 20 0 100
 
 cmo_tweaks.restrict_air (Restrict maneuverability while in the air) bool true
 
@@ -46,7 +56,13 @@ cmo_tweaks.hide_nametag (Hide player nametag when sneaking) bool true
 
 cmo_tweaks.hide_on_minimap (Hide player on minimap while sneaking) bool true
 
+cmo_hud.show_cooldown (Display weapon cooldown) bool true
+
 cmo_stamina.autohide_hudbar (Hide stamina bar when full) bool true
+
+cmo_hud.autohide_mana (Hide mana bar when full) bool true
+
+cmo_hud.autohide_hunger (Hide hunger bar when full) bool true
 
 [Audio Effects]
 
