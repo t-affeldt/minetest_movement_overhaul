@@ -8,7 +8,7 @@ local PUNCH_DELAY = 1
 
 local DELAY_DAMAGE = minetest.settings:get_bool("cmo_dodge.delay_damage", true)
 local STAMINA_COST = tonumber(minetest.settings:get("cmo_dodge.stamina_cost") or 0.2)
-local SPEED_BOOST = tonumber(minetest.settings:get("cmo_dodge.speed_boost") or 20)
+local SPEED_BOOST = tonumber(minetest.settings:get("cmo_dodge.speed_boost") or 18)
 local DODGE_PARTICLES = tonumber(minetest.settings:get("cmo_dodge.particles") or 20)
 
 if DELAY_DAMAGE then

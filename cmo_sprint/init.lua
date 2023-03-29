@@ -13,9 +13,9 @@ local MAX_SPEED = tonumber(minetest.settings:get("cmo_sprint.max_speed") or 15)
 local SPRINT_STAMINA_COST = tonumber(minetest.settings:get("cmo_sprint.stamina_cost") or 0.05)
 local SPRINT_PARTICLES = tonumber(minetest.settings:get("cmo_sprint.particles") or 20)
 
-local SPRINT_BOOST = 20
+local SPRINT_BOOST = 18
 local MOVEMENT_CONTROL = 0.5
-local SPRINT_JUMP_BOOST = 0.5
+local SPRINT_JUMP_BOOST = 0.4
 local RECOVERY_TIME = 0.5
 local SLIDE_TIME = 2
 local ANIMATION_SPEED = 1.5
@@ -99,6 +99,9 @@ local function stop_sprint(player, time_offset)
     local playername = player:get_player_name()
     sprinting_players[playername] = nil
     stopping_players[playername] = true
+    -- deduct stamina for remaining time
+    unified_stamina.add(playername, -SPRINT_STAMINA_COST * time_offset)
+    -- allow for short period of sliding
     minetest.after(time_offset, function()
         -- reapply walking speed modifiers
         if cmo.apply_base_modifiers ~= nil then

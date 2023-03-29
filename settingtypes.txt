@@ -28,11 +28,13 @@ cmo_dodge.enabled (Enable dodge move) bool true
 cmo_dodge.stamina_cost (Dodging stamina cost) float 0.2 0 1
 
 # The amount of force applied to the player upon performing a dodge.
-cmo_dodge.speed_boost (Dodging speed boost) float 20 0 100
+cmo_dodge.speed_boost (Dodging speed boost) float 18 0 100
 
 cmo_tweaks.restrict_air (Restrict maneuverability while in the air) bool true
 
 cmo_tweaks.adjust_animations (Adjust player animations) bool true
+
+cmo_stamina.hunger_consumption (Hunger per spent stamina) float 0.1 0 1
 
 [Visual Effects]
 

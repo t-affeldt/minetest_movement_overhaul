@@ -2,9 +2,13 @@ if cmo == nil then cmo = {} end
 local MODPATH = minetest.get_modpath(minetest.get_current_modname())
 local mod_hudbars = minetest.get_modpath("hudbars") ~= nil
 
+local HUNGER_CONSUMPTION = tonumber(minetest.settings:get("cmo_stamina.hunger_consumption") or 0.1)
+
 cmo.stamina = {}
 cmo.stamina.REGEN_RATE_DEFAULT = 0.05
 cmo.stamina.UPDATE_CYCLE = 0.2
+
+local deduct_hunger = dofile(MODPATH .. DIR_DELIM .. "hunger.lua")
 
 -- override this for custom conditions
 function cmo.stamina.regen_rate(playername, dtime)
@@ -17,9 +21,13 @@ function cmo.stamina.set(playername, value)
         return -1
     end
     local meta = player:get_meta()
-    value = math.max(math.min(value, 1), 0)
-    meta:set_float("cmo_sprint:stamina", value)
-    cmo.stamina._update_bar(player, value)
+    local current = meta:get_float("cmo_sprint:stamina")
+    local override = math.max(math.min(value, 1), 0)
+    meta:set_float("cmo_sprint:stamina", override)
+    cmo.stamina._update_bar(player, override)
+    if override < current then
+        deduct_hunger(player, (current - override) * HUNGER_CONSUMPTION)
+    end
     return value
 end
 
@@ -42,6 +50,9 @@ function cmo.stamina.add(playername, value)
     local override = math.max(math.min(current + value, 1), 0)
     meta:set_float("cmo_sprint:stamina", override)
     cmo.stamina._update_bar(player, override)
+    if override < current then
+        deduct_hunger(player, (current - override) * HUNGER_CONSUMPTION)
+    end
     return override
 end
 
