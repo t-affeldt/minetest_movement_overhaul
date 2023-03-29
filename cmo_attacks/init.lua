@@ -160,12 +160,14 @@ if MISS_PENALTY > 0 then
     -- apply stamina penalty on missed hits
     controls.register_on_press(function(player, control_name)
         if control_name ~= "dig" then return end
+        local itemstack = player:get_wielded_item()
+        -- skip if not wielding a tool
+        if not minetest.registered_tools[itemstack:get_name()] then return end
         local playername = player:get_player_name()
         if unified_stamina.get(playername) < MISS_PENALTY then
             sound_play({ name = "cmo_hit_fail" }, { to_player = playername }, true)
             return
         end
-        local itemstack = player:get_wielded_item()
         -- get object / node / nothing that player looks at
         local pointed_thing = cmo._get_pointed_thing(player)
         local reduce_stamina = true
