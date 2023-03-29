@@ -28,10 +28,14 @@ This is an overhaul for Minetest's movement system.
 - short time of being invulnerable and unpointable
 - melee PvP damage is delayed until after punch animation
 
-### CMO Stamina + Sprint
-- Hold W and tap A and D simultaneously to start sprinting
+### CMO Sprint
+- Hold W and tap A and D simultaneously to start sprinting (until you release W or run out of stamina)
 - movement commitment: accelerating, breaking, and turning takes time
-- stamina system compatible with other sprint mods (so far: *hbsprint, wadsprint, sprint_lite, real_stamina*)
+- tap Shift to stop sprinting and start sliding
+
+### CMO Stamina
+- system compatible with other sprint mods (so far: *hbsprint, wadsprint, sprint_lite, real_stamina*)
+- stamina consumption reduces satiation (supported: *hbhunger*, *mcl_hunger*)
 
 ### CMO Movement Tweaks
 - greatly reduced movability while in the air (unless allowed to fly)
@@ -49,8 +53,9 @@ This is an overhaul for Minetest's movement system.
 
 ### CMO HUD Additions
 - new inidcator showing how much the weapon has charged up again since the last punch
-- hides completely filled bars of supported mods (so far: *mana, hbhunger*), requires *hudbars*
+- hides completely filled bars of supported mods (so far: *mana, hbhunger, mcl_hunger*), requires *hudbars*
 
 ## License
+(c) Till Affeldt
 Code licensed under GNU LGPL v3. Media assets licensed under CC BY-SA 4.0.
-Check individual mods for media sources. (c) Till Affeldt, if unspecified.
+Check individual mods for media sources. Made by myself if unspecified.
