@@ -1,5 +1,6 @@
 if cmo == nil then cmo = {} end
 local MODPATH = minetest.get_modpath(minetest.get_current_modname())
+local mod_hudbars = minetest.get_modpath("hudbars") ~= nil
 
 cmo.stamina = {}
 cmo.stamina.REGEN_RATE_DEFAULT = 0.05
@@ -44,7 +45,9 @@ function cmo.stamina.add(playername, value)
     return override
 end
 
-dofile(MODPATH .. DIR_DELIM .. "hudbars.lua")
+if mod_hudbars then
+    dofile(MODPATH .. DIR_DELIM .. "hudbars.lua")
+end
 
 -- passively regenerate stamina
 local timer = 0

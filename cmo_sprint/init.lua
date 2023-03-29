@@ -11,6 +11,7 @@ end
 local SLIDING_ENABLED = minetest.settings:get_bool("cmo_sprint.sliding_enabled", true)
 local MAX_SPEED = tonumber(minetest.settings:get("cmo_sprint.max_speed") or 15)
 local SPRINT_STAMINA_COST = tonumber(minetest.settings:get("cmo_sprint.stamina_cost") or 0.05)
+local SPRINT_PARTICLES = tonumber(minetest.settings:get("cmo_sprint.particles") or 20)
 
 local SPRINT_BOOST = 20
 local MOVEMENT_CONTROL = 0.5
@@ -26,7 +27,7 @@ cmo.sprint = {}
 -- override this for custom requirements
 cmo.sprint.allow_sprint = function(player)
     local playername = player:get_player_name()
-    if player:get_attach() ~= nil or not cmo._is_grounded(player) then
+    if player:get_attach() ~= nil then
         return false
     end
     local stamina = cmo.stamina.get(playername)
@@ -39,6 +40,9 @@ end
 
 local sprinting_players = {}
 local stopping_players = {}
+
+local particle_spawners = {}
+local particle_node = {}
 
 local directions = {
     up = { z = 1 },
@@ -104,6 +108,11 @@ local function stop_sprint(player, time_offset)
         player_monoids.speed:del_change(player, "cmo_sprint:sprint_boost")
         player_monoids.jump:del_change(player, "cmo_sprint:sprint_boost")
         stopping_players[playername] = nil
+        if particle_spawners[playername] ~= nil then
+            minetest.delete_particlespawner(particle_spawners[playername])
+            particle_spawners[playername] = nil
+            particle_node[playername] = nil
+        end
     end)
 end
 
@@ -146,6 +155,36 @@ local function do_sprint(player, controls, dtime)
     player:add_velocity(movement)
 end
 
+local function spawn_particles(player)
+    if SPRINT_PARTICLES <= 0 then return end
+    local name = player:get_player_name()
+    local pos = player:get_pos()
+    pos.y = pos.y - 0.01
+    local node = minetest.get_node_or_nil(pos)
+    local nodename = node and node.name
+    local nodedef = node and minetest.registered_nodes[nodename]
+    if not nodedef or nodedef.drawtype ~= "normal" or not nodedef.walkable then
+        nodename = nil
+    end
+    if nodename == particle_node[name] then return end
+    particle_node[name] = nodename
+    if particle_spawners[name] ~= nil then
+        minetest.delete_particlespawner(particle_spawners[name])
+    end
+    if nodename == nil then return end
+    particle_spawners[name] = minetest.add_particlespawner({
+        attached = player,
+        amount = SPRINT_PARTICLES,
+        time = 0,
+        node = node,
+        size = 1,
+        pos = { x = 0, y = 0.1, z = 0 },
+        radius = { x = 0.3, y = 0, z = 0.3 },
+        vel = { x = 0, y = 0, z = 0 },
+        exptime = 0.5
+    })
+end
+
 local timer = 0
 minetest.register_globalstep(function(dtime)
     timer = timer + dtime
@@ -164,6 +203,9 @@ minetest.register_globalstep(function(dtime)
                 stop_sprint(player, RECOVERY_TIME)
             end
         end
+        if sprinting_players[playername] or stopping_players[playername] then
+            spawn_particles(player)
+        end
     end
     timer = 0
 end)
@@ -172,4 +214,6 @@ minetest.register_on_leaveplayer(function(player)
     local playername = player:get_player_name()
     sprinting_players[playername] = nil
     stopping_players[playername] = nil
+    particle_spawners[playername] = nil
+    particle_node[playername] = nil
 end)

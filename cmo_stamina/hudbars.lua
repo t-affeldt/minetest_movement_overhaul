@@ -2,12 +2,16 @@ local S = minetest.get_translator("cmo_stamina")
 
 local AUTO_HIDE = minetest.settings:get_bool("cmo_stamina.autohide_hudbar", true)
 
+-- the hudbars included in Mineclone2 uses a different call signature :(
+local IS_MINECLONE = minetest.get_modpath("mcl_util") ~= nil
+local unpack = table.unpack or unpack
+
 local bar = "cmo_stamina_bar.png"
 local icon = "cmo_stamina_icon.png"
 local color_default = "#168e3c"
 local color_highlight = "#0aaf3e"
 
-hb.register_hudbar(
+local params = {
     "stamina",
     0xFFFFFF,
     S("Stamina"),
@@ -24,6 +28,15 @@ hb.register_hudbar(
         order = { "label", "value" },
         textdomain = "cmo_stamina"
     }
+}
+
+if IS_MINECLONE then
+    -- add extra "direction" parameter
+    table.insert(params, 5, 0)
+end
+
+hb.register_hudbar(
+    unpack(params)
 )
 
 function cmo.stamina._update_bar(player, value)

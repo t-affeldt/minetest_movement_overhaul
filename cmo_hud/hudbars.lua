@@ -1,6 +1,7 @@
 local mod_hudbars = minetest.get_modpath("hudbars") ~= nil
-local mod_hbhunger = mod_hudbars and minetest.get_modpath("hbhunger") ~= nil
 local mod_mana = mod_hudbars and minetest.get_modpath("mana") ~= nil
+local mod_hbhunger = mod_hudbars and minetest.get_modpath("hbhunger") ~= nil
+local mod_mcl_hunger = mod_hudbars and minetest.get_modpath("mcl_hunger") ~= nil
 
 local enable_damage = minetest.settings:get_bool("enable_damage")
 local HIDE_HUNGER = minetest.settings:get_bool("cmo_hud.autohide_hunger", true)
@@ -11,6 +12,10 @@ local CYCLE_SPEED = 1
 
 if HIDE_HUNGER and mod_hbhunger and enable_damage then
     table.insert(bars, "satiation")
+end
+
+if HIDE_HUNGER and mod_mcl_hunger and mcl_hunger.active then
+    table.insert(bars, "hunger")
 end
 
 if HIDE_MANA and mod_mana then

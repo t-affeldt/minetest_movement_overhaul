@@ -9,6 +9,7 @@ local PUNCH_DELAY = 1
 local DELAY_DAMAGE = minetest.settings:get_bool("cmo_dodge.delay_damage", true)
 local STAMINA_COST = tonumber(minetest.settings:get("cmo_dodge.stamina_cost") or 0.2)
 local SPEED_BOOST = tonumber(minetest.settings:get("cmo_dodge.speed_boost") or 20)
+local DODGE_PARTICLES = tonumber(minetest.settings:get("cmo_dodge.particles") or 20)
 
 if DELAY_DAMAGE then
     -- delay PvP punch damage until after animation
@@ -94,6 +95,26 @@ local function perform_dodge(player, control_name)
             duration = INVULNERABILTY_TIME,
             rounding_steps = 10
         })
+    end
+    -- spawn particles
+    if DODGE_PARTICLES > 0 then
+        local pos = player:get_pos()
+        pos.y = pos.y - 0.01
+        local node = minetest.get_node_or_nil(pos)
+        local nodedef = node and minetest.registered_nodes[node.name]
+        if nodedef and nodedef.drawtype == "normal" and nodedef.walkable then
+            minetest.add_particlespawner({
+                attached = player,
+                amount = DODGE_PARTICLES * INVULNERABILTY_TIME,
+                time = INVULNERABILTY_TIME,
+                node = node,
+                size = 1,
+                pos = { x = 0, y = 0.1, z = 0 },
+                radius = { x = 0.3, y = 0, z = 0.3 },
+                vel = { x = 0, y = 0, z = 0 },
+                exptime = 0.5
+            })
+        end
     end
     -- modify player properties during the dodge
     local properties = player:get_properties()

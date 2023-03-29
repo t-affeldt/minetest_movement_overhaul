@@ -42,11 +42,17 @@ cmo_fx.desaturate (Desaturate screen on low attributes) bool true
 
 cmo_blood.place_blood (Occasionally place blood when hit) bool true
 
+[*Particles]
+
 cmo_blood.hit_effects (Spawn particles upon taking damage) bool true
 
 cmo_blood.hit_particles (Maximum amount of particles to spawn upon taking damage) int 20 1 50
 
 cmo_blood.bleeding (Spawn particles when low on health) bool true
+
+cmo_sprint.particles (Amount of particles when sprinting) int 20 0 50
+
+cmo_dodge.particles (Amount of particles when dodging) int 20 0 50
 
 [User Interface]
 

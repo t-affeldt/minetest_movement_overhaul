@@ -130,6 +130,8 @@ end
 
 if ENABLE_VIGNETTE or ENABLE_HEARTBEAT then
     minetest.register_on_player_hpchange(function(player, hp_change)
+        local playername = player:get_player_name()
+        if not players[playername] then return end
         if hp_change == 0 then return end
         apply_vignette(player, hp_change)
         apply_heartbeat(player, hp_change)
