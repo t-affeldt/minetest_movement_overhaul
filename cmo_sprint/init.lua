@@ -3,11 +3,6 @@ local MODPATH = minetest.get_modpath(minetest.get_current_modname())
 
 if not minetest.settings:get_bool("cmo_sprint.enabled", true) then return end
 
-local mod_mcl_sprint = minetest.get_modpath("mcl_sprint") ~= nil
-if mod_mcl_sprint then
-    dofile(MODPATH .. DIR_DELIM .. "compatibility" .. DIR_DELIM .. "mcl_sprint.lua")
-end
-
 local SLIDING_ENABLED = minetest.settings:get_bool("cmo_sprint.sliding_enabled", true)
 local MAX_SPEED = tonumber(minetest.settings:get("cmo_sprint.max_speed") or 15)
 local SPRINT_STAMINA_COST = tonumber(minetest.settings:get("cmo_sprint.stamina_cost") or 0.05)
@@ -21,6 +16,11 @@ local SLIDE_TIME = 2
 local ANIMATION_SPEED = 1.5
 
 local CYCLE_LENGTH = 0.2
+
+local sprinting_players = {}
+local stopping_players = {}
+local particle_spawners = {}
+local particle_node = {}
 
 cmo.sprint = {}
 
@@ -38,11 +38,9 @@ cmo.sprint.allow_sprint = function(player)
     return true
 end
 
-local sprinting_players = {}
-local stopping_players = {}
-
-local particle_spawners = {}
-local particle_node = {}
+function cmo.is_sprinting(playername)
+    return sprinting_players[playername] or stopping_players[playername] or false
+end
 
 local directions = {
     up = { z = 1 },
