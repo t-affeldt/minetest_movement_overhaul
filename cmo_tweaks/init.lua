@@ -1,5 +1,8 @@
 if cmo == nil then cmo = {} end
+local MODPATH = minetest.get_modpath(minetest.get_current_modname())
+
 local mod_name_monoid = minetest.get_modpath("name_monoid") ~= nil
+local mod_player_api = minetest.get_modpath("player_api") ~= nil
 
 local WALK_SPEED_MODIFIER = tonumber(minetest.settings:get("cmo_tweaks.walk_speed") or 1.1)
 local JUMP_HEIGHT_MODIFIER = tonumber(minetest.settings:get("cmo_tweaks.jump_height") or 1)
@@ -7,6 +10,7 @@ local RESTRICT_AIR_MOVEMENT = minetest.settings:get_bool("cmo_tweaks.restrict_ai
 local MUTE_SNEAK_FOOTSTEPS = minetest.settings:get_bool("cmo_tweaks.mute_sneak_footsteps", true)
 local HIDE_NAMETAG = minetest.settings:get_bool("cmo_tweaks.hide_nametag", true)
 local HIDE_ON_MINIMAP = minetest.settings:get_bool("cmo_tweaks.hide_on_minimap", true)
+local ADJUST_PLAYER_ANIMATIONS = minetest.settings:get_bool("cmo_tweaks.adjust_animations", true)
 
 local CYCLE_LENGTH = 0.2
 
@@ -98,4 +102,8 @@ if detect_sneak then
             player:set_properties({ show_on_minimap = true })
         end
     end)
+end
+
+if mod_player_api and ADJUST_PLAYER_ANIMATIONS then
+    dofile(MODPATH .. DIR_DELIM .. "animation.lua")
 end

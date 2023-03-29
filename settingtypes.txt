@@ -32,6 +32,8 @@ cmo_dodge.speed_boost (Dodging speed boost) float 20 0 100
 
 cmo_tweaks.restrict_air (Restrict maneuverability while in the air) bool true
 
+cmo_tweaks.adjust_animations (Adjust player animations) bool true
+
 [Visual Effects]
 
 cmo_fx.vignette (Enable vignette on low health) bool true

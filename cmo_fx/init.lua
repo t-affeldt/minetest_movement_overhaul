@@ -5,7 +5,11 @@ local ENABLE_MANA_PARTICLES = true
 local ENABLE_MANA_SOUND = true
 
 local mod_mana = minetest.get_modpath("mana") ~= nil
-if not mod_mana or not minetest.features.particlespawner_tweenable then
+if not mod_mana then
+    ENABLE_MANA_PARTICLES = false
+    ENABLE_MANA_SOUND = false
+end
+if not minetest.features.particlespawner_tweenable then
     ENABLE_MANA_PARTICLES = false
 end
 

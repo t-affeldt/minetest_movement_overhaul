@@ -3,7 +3,7 @@ local MODPATH = minetest.get_modpath(minetest.get_current_modname())
 
 if not minetest.settings:get_bool("cmo_sprint.enabled", true) then return end
 
-local mod_mcl_sprint = minetest.get_modpath("mod_mcl_sprint") ~= nil
+local mod_mcl_sprint = minetest.get_modpath("mcl_sprint") ~= nil
 if mod_mcl_sprint then
     dofile(MODPATH .. DIR_DELIM .. "compatibility" .. DIR_DELIM .. "mcl_sprint.lua")
 end
@@ -15,6 +15,9 @@ local SPRINT_STAMINA_COST = tonumber(minetest.settings:get("cmo_sprint.stamina_c
 local SPRINT_BOOST = 20
 local MOVEMENT_CONTROL = 0.5
 local SPRINT_JUMP_BOOST = 0.5
+local RECOVERY_TIME = 0.5
+local SLIDE_TIME = 2
+local ANIMATION_SPEED = 1.5
 
 local CYCLE_LENGTH = 0.2
 
@@ -52,6 +55,29 @@ cmo.stamina.regen_rate = function(playername, ...)
     return stamina_regen(playername, ...)
 end
 
+local determine_animation = cmo.determine_animation
+if cmo.determine_animation ~= nil then
+    cmo.determine_animation = function(player, ...)
+        local name = player:get_player_name()
+        local anim, speed = determine_animation(player, ...)
+        if anim == "walk" or anim == "walk_mine" then
+            if sprinting_players[name] and speed ~= nil then
+                speed = speed * (1 / MOVEMENT_CONTROL) * ANIMATION_SPEED
+            elseif stopping_players[name] then
+                if speed ~= nil then
+                    speed = speed * (1 / MOVEMENT_CONTROL)
+                end
+                if anim == "walk" then
+                    anim = "stand"
+                else
+                    anim = "mine"
+                end
+            end
+        end
+        return anim, speed
+    end
+end
+
 local function ready_sprint(player)
     if not cmo.sprint.allow_sprint(player) then return end
     local playername = player:get_player_name()
@@ -65,11 +91,11 @@ local function ready_sprint(player)
     player_monoids.speed:add_change(player, MOVEMENT_CONTROL, "cmo_sprint:sprint_boost")
 end
 
-local function stop_sprint(player)
+local function stop_sprint(player, time_offset)
     local playername = player:get_player_name()
     sprinting_players[playername] = nil
     stopping_players[playername] = true
-    minetest.after(1.5, function()
+    minetest.after(time_offset, function()
         -- reapply walking speed modifiers
         if cmo.apply_base_modifiers ~= nil then
             cmo.apply_base_modifiers(player)
@@ -88,7 +114,7 @@ local function do_sprint(player, controls, dtime)
     end
     local remaining = cmo.stamina.add(playername, -SPRINT_STAMINA_COST * dtime)
     if remaining <= 0 then
-        stop_sprint(player)
+        stop_sprint(player, RECOVERY_TIME)
         return
     end
     if not cmo._is_grounded(player) then
@@ -97,7 +123,8 @@ local function do_sprint(player, controls, dtime)
     -- initiate slide when tapping sneak key
     if SLIDING_ENABLED and controls.sneak then
         player_monoids.speed:add_change(player, 0.1, "cmo_sprint:sprint_boost")
-        stop_sprint(player)
+        player_monoids.jump:add_change(player, 0, "cmo_sprint:sprint_boost")
+        stop_sprint(player, SLIDE_TIME)
     end
     local movement = vector.new({ x = 0, y = 0, z = 0 })
     for key, dir in pairs(directions) do
@@ -134,7 +161,7 @@ minetest.register_globalstep(function(dtime)
             if controls.up then
                 do_sprint(player, controls, timer)
             else
-                stop_sprint(player)
+                stop_sprint(player, RECOVERY_TIME)
             end
         end
     end

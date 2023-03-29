@@ -29,8 +29,8 @@ This is an overhaul for Minetest's movement system.
 - melee PvP damage is delayed until after punch animation
 
 ### CMO Stamina + Sprint
-- sprint mod with movement commitment
-- accelerating, breaking, and turning takes time
+- Hold W and tap A and D simultaneously to start sprinting
+- movement commitment: accelerating, breaking, and turning takes time
 - stamina system compatible with other sprint mods (so far: *hbsprint, wadsprint, sprint_lite, real_stamina*)
 
 ### CMO Movement Tweaks
@@ -38,6 +38,8 @@ This is an overhaul for Minetest's movement system.
 - muted footstep sounds while sneaking
 - nametag hidden while sneaking
 - position on minimap hidden while sneaking
+- walk animations now consider player speed
+- "mining" the air will now only play a short punch animation (in 3rd person)
 
 ### CMO Effects
 - vignette effect based on player health
