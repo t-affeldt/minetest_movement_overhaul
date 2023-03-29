@@ -26,7 +26,7 @@ cmo.sprint = {}
 -- override this for custom requirements
 cmo.sprint.allow_sprint = function(player)
     local playername = player:get_player_name()
-    if not cmo._is_grounded(player) then
+    if player:get_attach() ~= nil or not cmo._is_grounded(player) then
         return false
     end
     local stamina = cmo.stamina.get(playername)
