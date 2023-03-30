@@ -1,5 +1,13 @@
 # Combat & Movement Overhaul (CMO)
-This is an overhaul for Minetest's movement system.
+This is a modular and comprehensive overhaul of two core components.
+The collection of features aims to make combat more strategic and dynamic.
+Damage is tweaked so that position and timing matters while the variety of movement modes offers new ways to engage.
+
+## Key Bindings
+- Hold __W__ and tap __A + S__ - Start sprinting
+- *(While sprinting)* Release __W__ - Stop sprinting
+- *(While sprinting)* Tap __Shift__ - Stop sprinting, start sliding
+- Double-tap __W, A, S, or D__ - Dodge in that direction
 
 ## Features
 
@@ -22,7 +30,7 @@ This is an overhaul for Minetest's movement system.
 - 3rd person camera follows lazily instead of centering on player
 
 ### CMO Dodge
-- double-tap on any direction key to initiate dodge
+- double-tap on any direction key to initiate dodge (unless sneaking)
 - costs stamina and can only be performed if sufficient stamina is left
 - dodge moves player into specified direction quickly
 - short time of being invulnerable and unpointable
@@ -31,7 +39,7 @@ This is an overhaul for Minetest's movement system.
 ### CMO Sprint
 - Hold W and tap A and D simultaneously to start sprinting (until you release W or run out of stamina)
 - movement commitment: accelerating, breaking, and turning takes time
-- tap Shift to stop sprinting and start sliding
+- tap Shift while sprinting to stop and start sliding
 
 ### CMO Stamina
 - system compatible with other sprint mods (so far: *hbsprint, wadsprint, sprint_lite, real_stamina*)
@@ -52,10 +60,15 @@ This is an overhaul for Minetest's movement system.
 - particles and sound effect when low on mana
 
 ### CMO HUD Additions
-- new inidcator showing how much the weapon has charged up again since the last punch
-- hides completely filled bars of supported mods (so far: *mana, hbhunger, mcl_hunger*), requires *hudbars*
+- particles indicate the amount of damage dealt
+- new inidcator shows how much equipped weapon has charged up since the last punch
+- completely filled bars of supported mods are hidden (so far: *mana, hbhunger, mcl_hunger*), requires *hudbars*
 
 ## License
-(c) Till Affeldt
-Code licensed under GNU LGPL v3. Media assets licensed under CC BY-SA 4.0.
-Check individual mods for media sources. Made by myself if unspecified.
+(c) 2023 Till Affeldt
+
+Code licensed under __GNU LGPL v3__. A copy of the terms can be found in this project directory.
+
+Media assets licensed under __CC BY-SA 4.0__ which can be found [here](https://creativecommons.org/licenses/by-sa/4.0/legalcode). Check individual mods for media sources. Made by myself if unspecified.
+
+Font used for floating damage indicators: [CatV](https://fontlibrary.org/en/font/catv-6x12-9) by "HolyBlackCat", CC BY-SA 3.0.

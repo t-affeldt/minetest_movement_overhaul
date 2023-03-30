@@ -1,5 +1,9 @@
+# CMO Attack Overhaul
+
 ## License
-Code under GNU LGPL.
+(c) 2023 Till Affeldt
+
+Code licensed under GNU LGPL v3.
 
 Audio files:
 * cmo_hit_fail CC0 from https://freesound.org/people/Department64/sounds/608054/

@@ -18,9 +18,6 @@
 - breathing sound (?) on low stamina
 - lower fov when fast (?)
 
-### CMO HUD
-- damage numbers
-
 ## To Do
 - blocking
 - power attacks
