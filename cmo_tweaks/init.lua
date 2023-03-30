@@ -3,6 +3,7 @@ local MODPATH = minetest.get_modpath(minetest.get_current_modname())
 
 local mod_name_monoid = minetest.get_modpath("name_monoid") ~= nil
 local mod_player_api = minetest.get_modpath("player_api") ~= nil
+local mod_playertags = minetest.get_modpath("playertags") ~= nil
 
 local WALK_SPEED_MODIFIER = tonumber(minetest.settings:get("cmo_tweaks.walk_speed") or 1.1)
 local JUMP_HEIGHT_MODIFIER = tonumber(minetest.settings:get("cmo_tweaks.jump_height") or 1)
@@ -13,6 +14,10 @@ local HIDE_ON_MINIMAP = minetest.settings:get_bool("cmo_tweaks.hide_on_minimap",
 local ADJUST_PLAYER_ANIMATIONS = minetest.settings:get_bool("cmo_tweaks.adjust_animations", true)
 
 local CYCLE_LENGTH = 0.2
+
+if mod_playertags then
+    HIDE_NAMETAG = false
+end
 
 function cmo.apply_base_modifiers(player)
     player_monoids.speed:add_change(player, WALK_SPEED_MODIFIER, "cmo_tweaks:walk_speed")
@@ -48,11 +53,8 @@ if RESTRICT_AIR_MOVEMENT then
         if timer < CYCLE_LENGTH then return end
         timer = 0
 
-        -- skip if no one is online
-        local playerlist = minetest.get_connected_players()
-        if #playerlist == 0 then return end
-
-        for _, player in ipairs(playerlist) do
+        local players = minetest.get_connected_players()
+        for _, player in ipairs(players) do
             local speed = 1
             local pos = player:get_pos()
             local may_fly = player:get_attach() ~= nil or minetest.check_player_privs(player, "fly")
@@ -72,7 +74,7 @@ if detect_sneak then
         if HIDE_NAMETAG then
             if mod_name_monoid then
                 local nametag = { color = { r = 0, g = 0, b = 0, a = 0 } }
-                name_monoid.monoid:add_change(player, nametag, "cmo_tweaks:hide_nametag")
+                name_monoid.monoid:add_change(player, nametag, "cmo_tweaks:sneaking")
             else
                 local nametag = player:get_nametag_attributes()
                 nametag.color.a = 0
@@ -91,7 +93,7 @@ if detect_sneak then
         end
         if HIDE_NAMETAG then
             if mod_name_monoid then
-                name_monoid.monoid:del_change(player, "cmo_tweaks:hide_nametag")
+                name_monoid.monoid:del_change(player, "cmo_tweaks:sneaking")
             else
                 local nametag = player:get_nametag_attributes()
                 nametag.color.a = 255
