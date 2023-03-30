@@ -74,6 +74,8 @@ cmo_hud.autohide_mana (Hide mana bar when full) bool true
 
 cmo_hud.autohide_hunger (Hide hunger bar when full) bool true
 
+cmo_hud.display_damage (Display damage numbers) bool true
+
 [Audio Effects]
 
 cmo_attacks.play_attack_sounds (Play attack sounds) bool true
