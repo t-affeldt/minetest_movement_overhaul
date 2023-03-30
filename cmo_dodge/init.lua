@@ -135,8 +135,10 @@ end
 
 -- detect touble-tap of direction keys
 controls.register_on_press(function(player, control_name)
-    if not directions[control_name] then return end
-    if not player or player:get_attach() ~= nil then return end
+    if directions[control_name] == nil then return end
+    if player == nil or player:get_attach() ~= nil then return end
+    if player:get_player_control().sneak then return end
+
     local name = player:get_player_name()
     local last_press = players[name]
     if last_press and last_press.state == "active" then return end
