@@ -3,12 +3,6 @@ This is a modular and comprehensive overhaul of two core components.
 The collection of features aims to make combat more strategic and dynamic.
 Damage is tweaked so that position and timing matters while the variety of movement modes offers new ways to engage.
 
-## Key Bindings
-- Hold __W__ and tap __A + D__ - Start sprinting
-- *(While sprinting)* Release __W__ - Stop sprinting
-- *(While sprinting)* Tap __Shift__ - Stop sprinting, start sliding
-- Double-tap __W, A, S, or D__ - Dodge in that direction
-
 ## Features
 
 ### CMO Attack Overhaul
@@ -63,6 +57,12 @@ Damage is tweaked so that position and timing matters while the variety of movem
 - particles indicate the amount of damage dealt
 - new inidcator shows how much equipped weapon has charged up since the last punch
 - completely filled bars of supported mods are hidden (so far: *mana, hbhunger, mcl_hunger*), requires *hudbars*
+
+## Key Bindings
+- Hold __W__ and tap __A + D__ -- Start sprinting
+- *(While sprinting)* Release __W__ -- Stop sprinting
+- *(While sprinting)* Tap __Shift__ -- Stop sprinting, start sliding
+- Double-tap __W, A, S,__ or __D__ -- Dodge in that direction
 
 ## License
 (c) 2023 Till Affeldt
