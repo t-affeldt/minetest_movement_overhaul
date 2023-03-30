@@ -4,7 +4,7 @@ The collection of features aims to make combat more strategic and dynamic.
 Damage is tweaked so that position and timing matters while the variety of movement modes offers new ways to engage.
 
 ## Key Bindings
-- Hold __W__ and tap __A + S__ - Start sprinting
+- Hold __W__ and tap __A + D__ - Start sprinting
 - *(While sprinting)* Release __W__ - Stop sprinting
 - *(While sprinting)* Tap __Shift__ - Stop sprinting, start sliding
 - Double-tap __W, A, S, or D__ - Dodge in that direction
