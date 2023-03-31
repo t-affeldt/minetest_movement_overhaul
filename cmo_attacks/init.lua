@@ -13,6 +13,7 @@ local BACKSTAB_MAX_ANGLE = 90
 local BACKSTAB_DAMAGE_MULTIPLIER = tonumber(minetest.settings:get("cmo_attacks.backstabs") or 1.5)
 local MISS_PENALTY = tonumber(minetest.settings:get("cmo_attacks.stamina_drain") or 0.15)
 local PLAY_ATTACK_SOUNDS = minetest.settings:get_bool("cmo_attacks.play_attack_sounds", true)
+local RECOIL_STRENGTH = tonumber(minetest.settings:get("cmo_attacks.recoil") or 1) * 0.02
 
 local CYCLE_LENGTH = 0
 
@@ -28,6 +29,36 @@ local function chance_round(num)
         rounded = rounded + 1
     end
     return rounded
+end
+
+local function get_lowest_index(tbl)
+    local minKey = math.huge
+    for k in pairs(tbl) do
+        if type(k) == "number" then
+            minKey = math.min(k, minKey)
+        end
+    end
+    return minKey
+end
+
+local function can_mine(tool_capabilities, nodedef)
+    local groupcaps = tool_capabilities.groupcaps or {}
+    local groups = nodedef.groups or {}
+    local level = groups.level or 1
+    for capability, capdetails in pairs(groupcaps) do
+        local min_group_strength = 1
+        if capdetails.times ~= nil then
+            min_group_strength = get_lowest_index(capdetails.times)
+        end
+        for group, groupstrength in pairs(groups) do
+            if capability == group then
+                if capdetails.maxlevel >= level and min_group_strength <= groupstrength then
+                    return true
+                end
+            end
+        end
+    end
+    return false
 end
 
 cmo.damage_modifiers = {}
@@ -55,6 +86,15 @@ function cmo.clean_itemstack(itemstack)
     meta:set_string("cmo_attacks:real_capabilities", "")
     meta:set_string("cmo_attacks:modifier", "")
     return itemstack
+end
+
+local function apply_recoil(player, amount)
+    if RECOIL_STRENGTH == 0 then return end
+    amount = amount * math.pi * RECOIL_STRENGTH
+
+    local val_v = player:get_look_vertical()
+    val_v = val_v - amount
+    player:set_look_vertical(val_v)
 end
 
 if mod_x_enchanting then
@@ -174,19 +214,13 @@ if MISS_PENALTY > 0 then
         -- ignore successful hits
         if pointed_thing and pointed_thing.type == "object" then
             reduce_stamina = false
+            apply_recoil(player)
         -- ignore hits on mineable nodes
         elseif pointed_thing and pointed_thing.type == "node" then
-            local groupcaps = (itemstack:get_tool_capabilities()).groupcaps or {}
             local node = minetest.get_node(pointed_thing.under)
-            local groups = minetest.registered_nodes[node.name].groups or {}
-            for capability, _ in pairs(groupcaps) do
-                for group, _ in pairs(groups) do
-                    if not reduce_stamina then break end
-                    if capability == group then
-                        reduce_stamina = false
-                        break
-                    end
-                end
+            local nodedef = minetest.registered_nodes[node.name]
+            if can_mine(itemstack:get_tool_capabilities(), nodedef) then
+                reduce_stamina = false
             end
         end
         -- apply stamina penalty

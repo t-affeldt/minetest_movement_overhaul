@@ -38,6 +38,8 @@ cmo_stamina.hunger_consumption (Hunger per spent stamina) float 0.1 0 1
 
 [Visual Effects]
 
+cmo_attacks.recoil (Recoil strength when punching entity) float 1 0 10
+
 cmo_fx.vignette (Enable vignette on low health) bool true
 
 cmo_fx.desaturate (Desaturate screen on low attributes) bool true
