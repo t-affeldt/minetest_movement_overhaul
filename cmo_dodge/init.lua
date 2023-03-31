@@ -4,21 +4,17 @@ local mod_hud_timers = minetest.get_modpath("hud_timers") ~= nil
 
 local MAX_KEY_TIME = 0.8
 local INVULNERABILTY_TIME = 1
-local PUNCH_DELAY = 1
 
-local DELAY_DAMAGE = minetest.settings:get_bool("cmo_dodge.delay_damage", true)
+local PUNCH_DELAY = tonumber(minetest.settings:get("cmo_dodge.punch_delay") or 1)
 local STAMINA_COST = tonumber(minetest.settings:get("cmo_dodge.stamina_cost") or 0.2)
 local SPEED_BOOST = tonumber(minetest.settings:get("cmo_dodge.speed_boost") or 18)
 local DODGE_PARTICLES = tonumber(minetest.settings:get("cmo_dodge.particles") or 20)
 
-if DELAY_DAMAGE then
-    -- delay PvP punch damage until after animation
+if PUNCH_DELAY > 0 then
+    -- delay punch damage until after animation
     minetest.after(0, function() -- ensure this gets called last
         minetest.register_on_player_hpchange(function(player, hp_change, reason)
             if hp_change >= 0 or reason.type ~= "punch" then
-                return hp_change
-            end
-            if reason.object == nil or not reason.object:is_player() then
                 return hp_change
             end
             minetest.after(PUNCH_DELAY, function()

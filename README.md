@@ -26,10 +26,10 @@ Damage is tweaked so that position and timing matters while the variety of movem
 
 ### CMO Dodge
 - double-tap on any direction key to initiate dodge (unless sneaking)
-- costs stamina and can only be performed if sufficient stamina is left
-- dodge moves player into specified direction quickly
-- short time of being invulnerable and unpointable
-- melee PvP damage is delayed until after punch animation
+- dodging costs stamina and can only be performed if sufficient stamina is left
+- dodging moves player into specified direction quickly
+- dodging grants short time of being invulnerable and unpointable
+- melee damage is delayed to make it avoidable
 
 ### CMO Sprint
 - Hold W and tap A and D simultaneously to start sprinting (until you release W or run out of stamina)
