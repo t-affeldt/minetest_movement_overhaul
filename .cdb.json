@@ -3,7 +3,7 @@
     "title": "Combat & Movement Overhaul",
     "dev_state": "WIP",
     "tags": ["player_effects", "pvp", "pve", "environment"],
-    "repo": "https://github.com/t-affeldt/combat_movement_overhaul",
-    "issue_tracker": "https://github.com/t-affeldt/combat_movement_overhaul/issues",
+    "repo": "https://github.com/t-affeldt/minetest_movement_overhaul",
+    "issue_tracker": "https://github.com/t-affeldt/minetest_movement_overhaul/issues",
     "license": "LGPL-3.0-or-later"
 }
