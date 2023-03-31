@@ -5,8 +5,6 @@ local mod_name_monoid = minetest.get_modpath("name_monoid") ~= nil
 local mod_player_api = minetest.get_modpath("player_api") ~= nil
 local mod_playertags = minetest.get_modpath("playertags") ~= nil
 
-local WALK_SPEED_MODIFIER = tonumber(minetest.settings:get("cmo_tweaks.walk_speed") or 1.1)
-local JUMP_HEIGHT_MODIFIER = tonumber(minetest.settings:get("cmo_tweaks.jump_height") or 1)
 local RESTRICT_AIR_MOVEMENT = minetest.settings:get_bool("cmo_tweaks.restrict_air", true)
 local MUTE_SNEAK_FOOTSTEPS = minetest.settings:get_bool("cmo_tweaks.mute_sneak_footsteps", true)
 local HIDE_NAMETAG = minetest.settings:get_bool("cmo_tweaks.hide_nametag", true)
@@ -17,20 +15,6 @@ local CYCLE_LENGTH = 0.2
 
 if mod_playertags then
     HIDE_NAMETAG = false
-end
-
-function cmo.apply_base_modifiers(player)
-    player_monoids.speed:add_change(player, WALK_SPEED_MODIFIER, "cmo_tweaks:walk_speed")
-    player_monoids.jump:add_change(player, JUMP_HEIGHT_MODIFIER, "cmo_tweaks:jump_height")
-end
-
-function cmo.purge_base_modifiers(player)
-    player_monoids.speed:del_change(player, "cmo_tweaks:walk_speed")
-    player_monoids.jump:del_change(player, "cmo_tweaks:jump_height")
-end
-
-if WALK_SPEED_MODIFIER ~= 1 or JUMP_HEIGHT_MODIFIER ~= 1 then
-    minetest.register_on_joinplayer(cmo.apply_base_modifiers)
 end
 
 if RESTRICT_AIR_MOVEMENT then

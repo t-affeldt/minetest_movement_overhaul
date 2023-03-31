@@ -1,5 +1,4 @@
 if cmo == nil then cmo = {} end
-local MODPATH = minetest.get_modpath(minetest.get_current_modname())
 
 if not minetest.settings:get_bool("cmo_sprint.enabled", true) then return end
 
@@ -85,10 +84,6 @@ local function ready_sprint(player)
     local playername = player:get_player_name()
     if stopping_players[playername] then return end
     sprinting_players[playername] = true
-    -- remove walking speed modifiers
-    if cmo.purge_base_modifiers ~= nil then
-        cmo.purge_base_modifiers(player)
-    end
     cmo.stamina.highlight_bar(player, true)
     player_monoids.speed:add_change(player, MOVEMENT_CONTROL, "cmo_sprint:sprint_boost")
 end
@@ -101,10 +96,6 @@ local function stop_sprint(player, time_offset)
     unified_stamina.add(playername, -SPRINT_STAMINA_COST * time_offset)
     -- allow for short period of sliding
     minetest.after(time_offset, function()
-        -- reapply walking speed modifiers
-        if cmo.apply_base_modifiers ~= nil then
-            cmo.apply_base_modifiers(player)
-        end
         cmo.stamina.highlight_bar(player, false)
         player_monoids.speed:del_change(player, "cmo_sprint:sprint_boost")
         player_monoids.jump:del_change(player, "cmo_sprint:sprint_boost")
