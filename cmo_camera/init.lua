@@ -42,6 +42,16 @@ minetest.register_globalstep(function(dtime)
 
     for _, player in pairs(playerlist) do
         local name = player:get_player_name()
+        -- skip if player is attached to something
+        if player:get_attach() ~= nil then
+            local offset_1p, offset = player:get_eye_offset()
+            -- reset eye offset if it hasn't changed
+            if vector.length(offset) > 0 and vector.length(offset - player_data[name]) == 0 then
+                player_data[name].offset = vector.new({ x = 0, y = 0, z = 0 })
+                player:set_eye_offset(offset_1p, nil)
+            end
+            return
+        end
         -- save timer individually to let it build up on marginal changes
         player_data[name].timer = math.min(player_data[name].timer + timer, CATCHUP_TIME)
         local vel = player:get_velocity()
