@@ -88,9 +88,9 @@ function cmo.clean_itemstack(itemstack)
     return itemstack
 end
 
-local function apply_recoil(player, amount)
+local function apply_recoil(player)
     if RECOIL_STRENGTH == 0 then return end
-    amount = amount * math.pi * RECOIL_STRENGTH
+    local amount = math.pi * RECOIL_STRENGTH
 
     local val_v = player:get_look_vertical()
     val_v = val_v - amount
