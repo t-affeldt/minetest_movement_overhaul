@@ -13,6 +13,7 @@ Damage is tweaked so that position and timing matters while the variety of movem
 - bonus damage based on relative movement speed
 - missed punches cost stamina
 - no damage dealt if out of stamina
+- recoil effect upon successful hit
 
 ### CMO Blood Effects
 - particle effects upon taking damage, based on damage type
