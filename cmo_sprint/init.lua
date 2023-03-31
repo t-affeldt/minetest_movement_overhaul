@@ -11,8 +11,10 @@ local SPRINT_BOOST = 18
 local MOVEMENT_CONTROL = 0.5
 local SPRINT_JUMP_BOOST = 0.4
 local RECOVERY_TIME = 0.5
+local RECOVERY_STAMINA_COST = 0.5
 local SLIDE_TIME = 2
 local ANIMATION_SPEED = 1.5
+local SLIDE_THRESHOLD = 1
 
 local CYCLE_LENGTH = 0.2
 
@@ -26,9 +28,16 @@ cmo.sprint = {}
 -- override this for custom requirements
 cmo.sprint.allow_sprint = function(player)
     local playername = player:get_player_name()
+    -- prevent if attached to something
     if player:get_attach() ~= nil then
         return false
     end
+    -- prevent if sneaking
+    local controls = player:get_player_control()
+    if controls.sneak then
+        return false
+    end
+    -- prevent if low on stamina
     local stamina = cmo.stamina.get(playername)
     local cycle = math.max(cmo.stamina.UPDATE_CYCLE, CYCLE_LENGTH, 0.1)
     if stamina < SPRINT_STAMINA_COST * cycle then
@@ -88,24 +97,27 @@ local function ready_sprint(player)
     player_monoids.speed:add_change(player, MOVEMENT_CONTROL, "cmo_sprint:sprint_boost")
 end
 
+local function resolve_sprint_stop(player)
+    local playername = player:get_player_name()
+    stopping_players[playername] = nil
+    cmo.stamina.highlight_bar(player, false)
+    player_monoids.speed:del_change(player, "cmo_sprint:sprint_boost")
+    player_monoids.jump:del_change(player, "cmo_sprint:sprint_boost")
+    stopping_players[playername] = nil
+    if particle_spawners[playername] ~= nil then
+        minetest.delete_particlespawner(particle_spawners[playername])
+        particle_spawners[playername] = nil
+        particle_node[playername] = nil
+    end
+end
+
 local function stop_sprint(player, time_offset)
     local playername = player:get_player_name()
     sprinting_players[playername] = nil
-    stopping_players[playername] = true
     -- deduct stamina for remaining time
-    unified_stamina.add(playername, -SPRINT_STAMINA_COST * time_offset)
+    unified_stamina.add(playername, -SPRINT_STAMINA_COST * time_offset * RECOVERY_STAMINA_COST)
     -- allow for short period of sliding
-    minetest.after(time_offset, function()
-        cmo.stamina.highlight_bar(player, false)
-        player_monoids.speed:del_change(player, "cmo_sprint:sprint_boost")
-        player_monoids.jump:del_change(player, "cmo_sprint:sprint_boost")
-        stopping_players[playername] = nil
-        if particle_spawners[playername] ~= nil then
-            minetest.delete_particlespawner(particle_spawners[playername])
-            particle_spawners[playername] = nil
-            particle_node[playername] = nil
-        end
-    end)
+    stopping_players[playername] = minetest.after(time_offset, resolve_sprint_stop, player)
 end
 
 local function do_sprint(player, controls, dtime)
@@ -197,6 +209,14 @@ minetest.register_globalstep(function(dtime)
         end
         if sprinting_players[playername] or stopping_players[playername] then
             spawn_particles(player)
+        end
+        if stopping_players[playername] then
+            local speed = player:get_velocity()
+            speed.y = 0
+            if vector.length(speed) < SLIDE_THRESHOLD then
+                stopping_players[playername]:cancel()
+                resolve_sprint_stop(player)
+            end
         end
     end
     timer = 0
