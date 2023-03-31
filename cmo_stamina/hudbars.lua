@@ -16,9 +16,9 @@ local params = {
     0xFFFFFF,
     S("Stamina"),
     {
-        bar = bar .. "^[colorize:" .. color_default .. ":255",
-        icon = icon .. "^[colorize:" .. color_default .. ":255",
-        bgicon = icon .. "^[colorize:#505050:255"
+        bar = bar .. "^[multiply:" .. color_default .. ":255",
+        icon = icon .. "^[multiply:" .. color_default .. ":255",
+        bgicon = icon .. "^[multiply:#505050:255"
     },
     100,
     100,
@@ -54,8 +54,8 @@ end
 function cmo.stamina.highlight_bar(player, highlight)
     local color = color_default
     if highlight then color = color_highlight end
-    local new_bar = bar .. "^[colorize:" .. color .. ":255"
-    local new_icon = icon .. "^[colorize:" .. color .. ":255"
+    local new_bar = bar .. "^[multiply:" .. color .. ":255"
+    local new_icon = icon .. "^[multiply:" .. color .. ":255"
     hb.change_hudbar(player, "stamina", nil, nil, new_icon, nil, new_bar)
 end
 
