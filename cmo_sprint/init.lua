@@ -2,6 +2,20 @@ if cmo == nil then cmo = {} end
 
 if not minetest.settings:get_bool("cmo_sprint.enabled", true) then return end
 
+local mod_player_api = minetest.get_modpath("player_api") ~= nil
+local mod_mcl_player = minetest.get_modpath("mcl_player") ~= nil
+
+local active_player_api = {}
+if mod_player_api then
+    active_player_api.get = player_api.get_animation
+    active_player_api.set = player_api.set_animation
+    active_player_api.models = player_api.registered_models
+elseif mod_mcl_player then
+    active_player_api.get = mcl_player.player_get_animation
+    active_player_api.set = mcl_player.player_set_animation
+    active_player_api.models = mcl_player.registered_player_models
+end
+
 local SLIDING_ENABLED = minetest.settings:get_bool("cmo_sprint.sliding_enabled", true)
 local MAX_SPEED = tonumber(minetest.settings:get("cmo_sprint.max_speed") or 15)
 local SPRINT_STAMINA_COST = tonumber(minetest.settings:get("cmo_sprint.stamina_cost") or 0.05)
@@ -20,6 +34,7 @@ local CYCLE_LENGTH = 0.2
 
 local sprinting_players = {}
 local stopping_players = {}
+local sliding_players = {}
 local particle_spawners = {}
 local particle_node = {}
 
@@ -104,6 +119,7 @@ local function resolve_sprint_stop(player)
     player_monoids.speed:del_change(player, "cmo_sprint:sprint_boost")
     player_monoids.jump:del_change(player, "cmo_sprint:sprint_boost")
     stopping_players[playername] = nil
+    sliding_players[playername] = nil
     if particle_spawners[playername] ~= nil then
         minetest.delete_particlespawner(particle_spawners[playername])
         particle_spawners[playername] = nil
@@ -137,6 +153,7 @@ local function do_sprint(player, controls, dtime)
     if SLIDING_ENABLED and controls.sneak then
         player_monoids.speed:add_change(player, 0.1, "cmo_sprint:sprint_boost")
         player_monoids.jump:add_change(player, 0, "cmo_sprint:sprint_boost")
+        sliding_players[playername] = true
         stop_sprint(player, SLIDE_TIME)
     end
     local movement = vector.new({ x = 0, y = 0, z = 0 })
@@ -193,7 +210,8 @@ local timer = 0
 minetest.register_globalstep(function(dtime)
     timer = timer + dtime
     if timer < CYCLE_LENGTH then return end
-    for _, player in ipairs(minetest.get_connected_players()) do
+    local players = minetest.get_connected_players()
+    for _, player in ipairs(players) do
         local controls = player:get_player_control()
         local playername = player:get_player_name()
         if sprinting_players[playername] == nil
@@ -213,6 +231,7 @@ minetest.register_globalstep(function(dtime)
         if stopping_players[playername] then
             local speed = player:get_velocity()
             speed.y = 0
+            -- stop sliding early if no momentum
             if vector.length(speed) < SLIDE_THRESHOLD then
                 stopping_players[playername]:cancel()
                 resolve_sprint_stop(player)
@@ -221,6 +240,25 @@ minetest.register_globalstep(function(dtime)
     end
     timer = 0
 end)
+
+-- override player animation with "lay" when sliding
+if mod_player_api or mod_mcl_player then
+    minetest.register_globalstep(function(dtime)
+        local players = minetest.get_connected_players()
+        for _, player in ipairs(players) do
+            local playername = player:get_player_name()
+            if sliding_players[playername] ~= nil then
+                local player_data = active_player_api.get(player)
+                local model = player_data.model
+                local animations = active_player_api.models[model].animations
+                if animations.lay ~= nil then
+                    active_player_api.set(player, "lay", player_data.animation_speed)
+                    player:set_properties({eye_height=0.3,collisionbox = {-0.6, 0.0, -0.6, 0.6, 0.3, 0.6}})
+                end
+            end
+        end
+    end)
+end
 
 minetest.register_on_leaveplayer(function(player)
     local playername = player:get_player_name()
