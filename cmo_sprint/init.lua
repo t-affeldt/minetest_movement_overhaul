@@ -80,6 +80,7 @@ cmo.stamina.regen_rate = function(playername, ...)
     return stamina_regen(playername, ...)
 end
 
+-- adjust animation speed
 local determine_animation = cmo.determine_animation
 if cmo.determine_animation ~= nil then
     cmo.determine_animation = function(player, ...)
@@ -88,15 +89,8 @@ if cmo.determine_animation ~= nil then
         if anim == "walk" or anim == "walk_mine" then
             if sprinting_players[name] and speed ~= nil then
                 speed = speed * (1 / MOVEMENT_CONTROL) * ANIMATION_SPEED
-            elseif stopping_players[name] then
-                if speed ~= nil then
-                    speed = speed * (1 / MOVEMENT_CONTROL)
-                end
-                if anim == "walk" then
-                    anim = "stand"
-                else
-                    anim = "mine"
-                end
+            elseif stopping_players[name] and speed ~= nil then
+                speed = speed * (1 / MOVEMENT_CONTROL)
             end
         end
         return anim, speed
@@ -241,19 +235,37 @@ minetest.register_globalstep(function(dtime)
     timer = 0
 end)
 
--- override player animation with "lay" when sliding
 if mod_player_api or mod_mcl_player then
     minetest.register_globalstep(function(dtime)
         local players = minetest.get_connected_players()
         for _, player in ipairs(players) do
             local playername = player:get_player_name()
-            if sliding_players[playername] ~= nil then
-                local player_data = active_player_api.get(player)
-                local model = player_data.model
-                local animations = active_player_api.models[model].animations
+            local player_data = active_player_api.get(player)
+            local model = player_data.model
+            local animations = active_player_api.models[model].animations
+            local speed = player_data.animation_speed
+            -- use sprint animation if available
+            if sprinting_players[playername] ~= nil then
+                if player_data.animation == "walk" and animations.run_walk ~= nil then
+                    active_player_api.set(player, "run_walk", speed)
+                elseif player_data.animation == "walk_mine" and animations.run_walk_mine then
+                    active_player_api.set(player, "run_walk_mine", speed)
+                end
+            -- override player animation with "lay" when sliding
+            elseif sliding_players[playername] ~= nil then
                 if animations.lay ~= nil then
-                    active_player_api.set(player, "lay", player_data.animation_speed)
-                    player:set_properties({eye_height=0.3,collisionbox = {-0.6, 0.0, -0.6, 0.6, 0.3, 0.6}})
+                    active_player_api.set(player, "lay", speed)
+                    player:set_properties({
+                        eye_height = 0.4,
+                        collisionbox = {-0.6, 0.0, -0.6, 0.6, 0.4, 0.6}
+                    })
+                end
+            -- override player animation with sneak animation when stopping
+            elseif stopping_players[playername] ~= nil then
+                if animations.duck_std ~= nil then
+                    active_player_api.set(player, "duck_std", speed)
+                elseif animations.sneak_stand ~= nil then
+                    active_player_api.set(player, "sneak_stand", speed)
                 end
             end
         end
