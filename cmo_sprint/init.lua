@@ -137,6 +137,12 @@ end
 
 local function do_sprint(player, controls, dtime)
     local playername = player:get_player_name()
+    local physics_speed = player:get_physics_override().speed / MOVEMENT_CONTROL
+    -- immediately stop sprinting if not allowed to move
+    if physics_speed == 0 then
+        resolve_sprint_stop(player)
+        return
+    end
     if not sprinting_players[playername] then
         ready_sprint(player)
     end
@@ -167,12 +173,13 @@ local function do_sprint(player, controls, dtime)
     end
     local velocity = player:get_velocity()
     velocity.y = 0 -- ignore vertical speed
-    local speed = vector.length(velocity) / MAX_SPEED
-    local speed_boost = math.min((1 - speed) * MAX_SPEED, SPRINT_BOOST * dtime)
+    local top_speed = MAX_SPEED * physics_speed
+    local speed = vector.length(velocity) / top_speed
+    local speed_boost = math.min((1 - speed) * top_speed, SPRINT_BOOST * physics_speed * dtime)
     movement = vector.normalize(movement)
     movement = cmo.get_absolute_vector(movement, player:get_look_horizontal())
     movement = vector.multiply(movement, speed_boost)
-    local new_speed = vector.length(velocity + movement) / MAX_SPEED
+    local new_speed = vector.length(velocity + movement) / top_speed
     player_monoids.jump:add_change(player, 1 + ((new_speed^2) * SPRINT_JUMP_BOOST), "cmo_sprint:sprint_boost")
     player:add_velocity(movement)
 end
