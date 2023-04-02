@@ -31,6 +31,7 @@ local ANIMATION_SPEED = 1.5
 local SLIDE_THRESHOLD = 1
 
 local CYCLE_LENGTH = 0.2
+local MIN_SPRINT_STAMINA = SPRINT_STAMINA_COST * math.max(cmo.stamina.UPDATE_CYCLE, CYCLE_LENGTH, 0.1)
 
 local sprinting_players = {}
 local stopping_players = {}
@@ -52,10 +53,14 @@ cmo.sprint.allow_sprint = function(player)
     if controls.sneak then
         return false
     end
-    -- prevent if low on stamina
+    -- prevent if unable to move
+    local physics = player:get_physics_override()
+    if physics.speed <= 0 then
+        return false
+    end
+    -- prevent if out of stamina
     local stamina = cmo.stamina.get(playername)
-    local cycle = math.max(cmo.stamina.UPDATE_CYCLE, CYCLE_LENGTH, 0.1)
-    if stamina < SPRINT_STAMINA_COST * cycle then
+    if stamina <= 0 then
         return false
     end
     return true
@@ -108,10 +113,10 @@ end
 
 local function resolve_sprint_stop(player)
     local playername = player:get_player_name()
-    stopping_players[playername] = nil
     cmo.stamina.highlight_bar(player, false)
     player_monoids.speed:del_change(player, "cmo_sprint:sprint_boost")
     player_monoids.jump:del_change(player, "cmo_sprint:sprint_boost")
+    sprinting_players[playername] = nil
     stopping_players[playername] = nil
     sliding_players[playername] = nil
     if particle_spawners[playername] ~= nil then
@@ -135,11 +140,13 @@ local function do_sprint(player, controls, dtime)
     if not sprinting_players[playername] then
         ready_sprint(player)
     end
+    -- subtract stamina and end sprint if running out
     local remaining = cmo.stamina.add(playername, -SPRINT_STAMINA_COST * dtime)
-    if remaining <= 0 then
+    if remaining < MIN_SPRINT_STAMINA then
         stop_sprint(player, RECOVERY_TIME)
         return
     end
+    -- don't add velocity if in the air
     if not cmo._is_grounded(player) then
         return
     end
