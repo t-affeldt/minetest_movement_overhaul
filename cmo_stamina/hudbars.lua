@@ -12,7 +12,7 @@ local color_default = "#168e3c"
 local color_highlight = "#0aaf3e"
 
 local params = {
-    "stamina",
+    "cmo_stamina",
     0xFFFFFF,
     S("Stamina"),
     {
@@ -41,12 +41,12 @@ hb.register_hudbar(
 
 function cmo.stamina._update_bar(player, value)
     value = math.floor(value * 100)
-    hb.change_hudbar(player, "stamina", value)
+    hb.change_hudbar(player, "cmo_stamina", value)
     if AUTO_HIDE then
         if value == 100 then
-            hb.hide_hudbar(player, "stamina")
+            hb.hide_hudbar(player, "cmo_stamina")
         else
-            hb.unhide_hudbar(player, "stamina")
+            hb.unhide_hudbar(player, "cmo_stamina")
         end
     end
 end
@@ -56,11 +56,11 @@ function cmo.stamina.highlight_bar(player, highlight)
     if highlight then color = color_highlight end
     local new_bar = bar .. "^[multiply:" .. color .. ":255"
     local new_icon = icon .. "^[multiply:" .. color .. ":255"
-    hb.change_hudbar(player, "stamina", nil, nil, new_icon, nil, new_bar)
+    hb.change_hudbar(player, "cmo_stamina", nil, nil, new_icon, nil, new_bar)
 end
 
 minetest.register_on_joinplayer(function(player)
     local playername = player:get_player_name()
     local stamina = math.floor(cmo.stamina.get(playername) * 100)
-    hb.init_hudbar(player, "stamina", stamina, nil, stamina == 100)
+    hb.init_hudbar(player, "cmo_stamina", stamina, nil, stamina == 100)
 end)
