@@ -110,7 +110,9 @@ end
 if mod_player_api then
     -- disable hack that messes with functionality
     for _, modeldef in pairs(player_api.registered_models) do
-        modeldef.animations.lay.override_local = false
+        for _, animation in pairs(modeldef.animations) do
+            animation.override_local = false
+        end
     end
 end
 
