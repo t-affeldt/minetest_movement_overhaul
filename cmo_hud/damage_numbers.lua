@@ -3,7 +3,7 @@ local x_scale = 50
 
 local DEFAULT_COLOR = "#c40b0b"
 local ENTITY_COLOR = "#ba4a28"
-local CRIT_COLOR = "#eac715"
+-- local CRIT_COLOR = "#eac715"
 
 local function generate_texture(num, color)
     num = math.round(num)
@@ -33,14 +33,7 @@ end
 
 local function pick_color(reason)
     if reason.type == "punch_entity" then return ENTITY_COLOR end
-    if reason.type ~= "punch" and reason.type ~= "set_hp" then return DEFAULT_COLOR end
-    if reason.type == "set_hp" and reason.subtype ~= "punch_delay" then return DEFAULT_COLOR end
-    if reason.object == nil or not reason.object:is_player() then return DEFAULT_COLOR end
-    local itemstack = reason.object:get_wielded_item()
-    local meta = itemstack:get_meta()
-    local override = tonumber(meta:get_string("cmo_attacks:modifier")) or 1
-    if override <= 1 then return DEFAULT_COLOR end
-    return CRIT_COLOR
+    return DEFAULT_COLOR
 end
 
 local function spawn_particle(object, hp_change, reason)
@@ -52,7 +45,7 @@ local function spawn_particle(object, hp_change, reason)
     -- offest particle towards attacker
     if reason.object ~= nil then
         local attackdir = vector.normalize(reason.object:get_pos() - pos)
-        pos = pos + 0.2 * attackdir
+        pos = pos + 0.5 * attackdir
     end
 
     -- spawn at head
@@ -65,14 +58,14 @@ local function spawn_particle(object, hp_change, reason)
 
     minetest.add_particle({
 		pos = pos,
-		velocity = { x = 0, y = 2, z = 0 },
-        acceleration = { x = 0, y = -2, z = 0 },
+		velocity = { x = 0, y = 3, z = 0 },
+        acceleration = { x = 0, y = -6, z = 0 },
 		expirationtime = 2,
 		size = 2,
 		collisiondetection = false,
 		vertical = false,
 		texture = texture,
-		glow = 30,
+		glow = 14,
 	})
 end
 
