@@ -48,15 +48,25 @@ local function spawn_particle(object, hp_change, reason)
     if hp_change == nil or hp_change >= 0 then return end
     local pos = object:get_pos()
     if pos == nil then return end
-    pos.y = pos.y + 0.5
+
+    -- offest particle towards attacker
+    if reason.object ~= nil then
+        local attackdir = vector.normalize(reason.object:get_pos() - pos)
+        pos = pos + 0.2 * attackdir
+    end
+
+    -- spawn at head
+    local properties = object:get_properties()
+    local height = properties.collisionbox[5] + 0.5
+    pos.y = pos.y + height
 
     local color = pick_color(reason)
     local texture = generate_texture(-hp_change, color)
 
     minetest.add_particle({
 		pos = pos,
-		velocity = {x=0, y=2, z=0},
-        acceleration = {x=0,y=-2,z=0},
+		velocity = { x = 0, y = 2, z = 0 },
+        acceleration = { x = 0, y = -2, z = 0 },
 		expirationtime = 2,
 		size = 2,
 		collisiondetection = false,

@@ -57,16 +57,14 @@ function cmo.determine_animation(player, model, time)
     end
 end
 
-local time = 0
 player_api.globalstep = function(dtime)
-    time = time + dtime
     local players = minetest.get_connected_players()
     for _, player in ipairs(players) do
         local name = player:get_player_name()
         local data = player_api.get_animation(player)
         local model = data and player_api.registered_models[data.model]
         if model and not player_api.player_attached[name] then
-            local animation, speed = cmo.determine_animation(player, model, time)
+            local animation, speed = cmo.determine_animation(player, model, dtime)
             if animation ~= nil then
                 player_api.set_animation(player, animation, speed)
             end

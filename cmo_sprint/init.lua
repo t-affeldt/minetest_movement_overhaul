@@ -4,6 +4,7 @@ if not minetest.settings:get_bool("cmo_sprint.enabled", true) then return end
 
 local mod_player_api = minetest.get_modpath("player_api") ~= nil
 local mod_mcl_player = minetest.get_modpath("mcl_player") ~= nil
+local mod_3d_armor_flyswim = minetest.get_modpath("3d_armor_flyswim") ~= nil
 
 local active_player_api = {}
 if mod_player_api then
@@ -51,6 +52,10 @@ cmo.sprint.allow_sprint = function(player)
     -- prevent if sneaking
     local controls = player:get_player_control()
     if controls.sneak then
+        return false
+    end
+    -- prevent if in the air
+    if not cmo._is_grounded(player) then
         return false
     end
     -- prevent if unable to move
@@ -102,6 +107,71 @@ if cmo.determine_animation ~= nil then
     end
 end
 
+if mod_player_api then
+    -- disable hack that messes with functionality
+    for _, modeldef in pairs(player_api.registered_models) do
+        modeldef.animations.lay.override_local = false
+    end
+end
+
+if mod_3d_armor_flyswim then
+    -- reenable lowered collisionbox
+    local model = armor_fly_swim.get_player_model()
+    local lay = player_api.registered_models[model].animations.lay
+    player_api.registered_models[model].animations.lay.collisionbox = {-0.6, 0.0, -0.6, 0.6, 0.3, 0.6}
+    player_api.registered_models[model].animations.lay.eye_height = 0.3
+    player_api.registered_models[model].animations.lay._equals = "lay_tweaked"
+end
+
+if mod_player_api or mod_mcl_player then
+    -- disable local animations
+    minetest.register_on_joinplayer(function(player)
+        local data = active_player_api.get(player)
+        local model = data and active_player_api.models[data.model]
+        local speed = (model and model.animation_speed) or 30
+        player:set_local_animation({}, {}, {}, {}, speed)
+    end)
+
+    -- override active animations
+    minetest.register_globalstep(function(dtime)
+        local players = minetest.get_connected_players()
+        for _, player in ipairs(players) do
+            local playername = player:get_player_name()
+            local player_data = active_player_api.get(player)
+            local model = player_data.model
+            local animations = active_player_api.models[model].animations
+            local speed = player_data.animation_speed
+            -- use sprint animation if available
+            if sprinting_players[playername] ~= nil then
+                if player_data.animation == "walk" and animations.run_walk ~= nil then
+                    active_player_api.set(player, "run_walk", speed)
+                elseif player_data.animation == "walk_mine" and animations.run_walk_mine then
+                    active_player_api.set(player, "run_walk_mine", speed)
+                end
+            -- override player animation with "lay" when sliding
+            elseif sliding_players[playername] ~= nil then
+                if animations.lay ~= nil then
+                    active_player_api.set(player, "lay", speed)
+                    if mod_mcl_player then
+                        -- lower collisionbox for Mineclone (mcl_playerplus will reset this every cycle)
+                        player:set_properties({
+                            eye_height = 0.4,
+                            collisionbox = {-0.6, 0.0, -0.6, 0.6, 0.4, 0.6}
+                        })
+                    end
+                end
+            -- override player animation with sneak animation when stopping
+            elseif stopping_players[playername] ~= nil then
+                if animations.duck_std ~= nil then
+                    active_player_api.set(player, "duck_std", speed)
+                elseif animations.sneak_stand ~= nil then
+                    active_player_api.set(player, "sneak_stand", speed)
+                end
+            end
+        end
+    end)
+end
+
 local function ready_sprint(player)
     if not cmo.sprint.allow_sprint(player) then return end
     local playername = player:get_player_name()
@@ -130,7 +200,7 @@ local function stop_sprint(player, time_offset)
     local playername = player:get_player_name()
     sprinting_players[playername] = nil
     -- deduct stamina for remaining time
-    unified_stamina.add(playername, -SPRINT_STAMINA_COST * time_offset * RECOVERY_STAMINA_COST)
+    cmo.stamina.add(playername, -SPRINT_STAMINA_COST * time_offset * RECOVERY_STAMINA_COST)
     -- allow for short period of sliding
     stopping_players[playername] = minetest.after(time_offset, resolve_sprint_stop, player)
 end
@@ -146,14 +216,14 @@ local function do_sprint(player, controls, dtime)
     if not sprinting_players[playername] then
         ready_sprint(player)
     end
+    -- don't add velocity if in the air
+    if not cmo._is_grounded(player) then
+        return
+    end
     -- subtract stamina and end sprint if running out
     local remaining = cmo.stamina.add(playername, -SPRINT_STAMINA_COST * dtime)
     if remaining < MIN_SPRINT_STAMINA then
         stop_sprint(player, RECOVERY_TIME)
-        return
-    end
-    -- don't add velocity if in the air
-    if not cmo._is_grounded(player) then
         return
     end
     -- initiate slide when tapping sneak key
@@ -248,43 +318,6 @@ minetest.register_globalstep(function(dtime)
     end
     timer = 0
 end)
-
-if mod_player_api or mod_mcl_player then
-    minetest.register_globalstep(function(dtime)
-        local players = minetest.get_connected_players()
-        for _, player in ipairs(players) do
-            local playername = player:get_player_name()
-            local player_data = active_player_api.get(player)
-            local model = player_data.model
-            local animations = active_player_api.models[model].animations
-            local speed = player_data.animation_speed
-            -- use sprint animation if available
-            if sprinting_players[playername] ~= nil then
-                if player_data.animation == "walk" and animations.run_walk ~= nil then
-                    active_player_api.set(player, "run_walk", speed)
-                elseif player_data.animation == "walk_mine" and animations.run_walk_mine then
-                    active_player_api.set(player, "run_walk_mine", speed)
-                end
-            -- override player animation with "lay" when sliding
-            elseif sliding_players[playername] ~= nil then
-                if animations.lay ~= nil then
-                    active_player_api.set(player, "lay", speed)
-                    player:set_properties({
-                        eye_height = 0.4,
-                        collisionbox = {-0.6, 0.0, -0.6, 0.6, 0.4, 0.6}
-                    })
-                end
-            -- override player animation with sneak animation when stopping
-            elseif stopping_players[playername] ~= nil then
-                if animations.duck_std ~= nil then
-                    active_player_api.set(player, "duck_std", speed)
-                elseif animations.sneak_stand ~= nil then
-                    active_player_api.set(player, "sneak_stand", speed)
-                end
-            end
-        end
-    end)
-end
 
 minetest.register_on_leaveplayer(function(player)
     local playername = player:get_player_name()

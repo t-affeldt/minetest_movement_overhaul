@@ -159,6 +159,7 @@ if BACKSTAB_DAMAGE_MULTIPLIER > 1 then
         else
             return 1
         end
+        lookdir.y = 0
         -- vector from defender to attacker
         local attacker_dir = vector.subtract(player:get_pos(), pointed_thing.ref:get_pos())
         local angle = vector.angle(lookdir, attacker_dir) / (2 * math.pi) * 360
