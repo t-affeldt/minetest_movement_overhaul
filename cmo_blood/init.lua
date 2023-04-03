@@ -18,6 +18,8 @@ local NODE_CHANCE = 6
 
 local HEALTH_BLEEDING_THRESHOLD = 0.3
 
+local valid_reasons = { punch = true, fall = true, node_damage = true, set_hp = true }
+
 function cmo.trigger_bleeding_fx(player, health)
     health = health / minetest.PLAYER_MAX_HP_DEFAULT
     return health <= HEALTH_BLEEDING_THRESHOLD
@@ -120,6 +122,8 @@ if PLACE_BLOOD then
 
     minetest.register_on_player_hpchange(function(player, hp_change, reason)
         if not player or hp_change >= 0 then return end
+        if reason.type == nil or not valid_reasons[reason.type] then return end
+        if reason.type == "set_hp" and reason.subtype ~= "delay_punch" then return end
         local damage = -hp_change / minetest.PLAYER_MAX_HP_DEFAULT
         local should_place = damage ^ (1 / NODE_CHANCE) >= math.random()
         local health = player:get_hp() + hp_change
@@ -133,32 +137,11 @@ if PLACE_BLOOD then
     end, false)
 end
 
--- place blood drops on screen upon hit
---[[minetest.register_on_player_hpchange(function(player, hp_change, reason)
-    for _ = 1,5,1 do
-        local r = math.random(1, 2)
-        local x = 0.15 + math.random() * 0.70
-        local y = 0.15 + math.random() * 0.70
-        local image = "cmo_blood_splash_0" .. r .. ".png"
-        player:hud_add({
-            name = "cmo_blood",
-            hud_elem_type = "image",
-            position = { x = x, y = y },
-            alignment = { x = 0.5, y = 0.5 },
-            scale = { x = 0.5, y = 0.5 },
-            z_index = -401,
-            text = image,
-            offset = { x = 0, y = 0 }
-        })
-    end
-end, false)]]
-
 -- spawn particles upon getting hit
 if HIT_EFFECTS then
-    local valid_reasons = { punch = true, fall = true, node_damage = true, set_hp = true }
     minetest.register_on_player_hpchange(function(player, hp_change, reason)
         if not player or hp_change >= 0 then return end
-        if reason.type ~= nil and not valid_reasons[reason.type] then return end
+        if reason.type == nil or not valid_reasons[reason.type] then return end
         if reason.type == "set_hp" and reason.subtype ~= "delay_punch" then return end
         local pos = vector.new({ x = 0, y = 0, z = 0 })
         local spawner_pos = pos
